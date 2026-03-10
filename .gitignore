@@ -2,3 +2,11 @@ env/
 __pycache__/
 *.sqlite3
 .DS_Store
+
+# Documentation and Administrative folders
+Meeting Notes/
+Rubrics/
+Starting Forms/
+Writing/
+Readme.docx
+_Mo's_Cartridge_/
