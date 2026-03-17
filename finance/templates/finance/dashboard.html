@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoneyMate Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-height: 400px; }
+        .income-text { color: #27ae60; font-weight: bold; }
+        /* This ensures the chart actually has a visible area to draw in */
+        .chart-container { position: relative; height: 300px; width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>MoneyMate 💰</h2>
+        <div>Welcome, {{ user.username }}! | <a href="/admin/logout/" style="color: #3498db;">Logout</a></div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="box">
+            <h3>Spending Breakdown</h3>
+            <p>Disposable Income: <strong>£{{ leftover }}</strong></p>
+            <div class="chart-container">
+                <canvas id="spendingChart"></canvas>
+            </div>
+        </div>
+
+        <div class="box">
+            <h3>Add a New Bill</h3>
+            <form method="POST" style="margin-bottom: 20px;">
+                {% csrf_token %} {{ form.as_p }} <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    + Save Bill
+        </button>
+    </form>
+
+    <hr>
+            <h3>Recent Bills</h3>
+            <ul style="list-style: none; padding: 0;">
+                {% for expense in expenses %}
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <strong>{{ expense.name }}</strong>: £{{ expense.amount }}
+                    </li>
+                {% empty %}
+                    <li>No expenses found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // We wrap this in a function to ensure the page is fully loaded
+        window.onload = function() {
+            const ctx = document.getElementById('spendingChart').getContext('2d');
+            
+            // Prepare the data from Django tags
+            const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
+            const data = [{% for e in expenses %}{{ e.amount }},{% endfor %}];
+
+            // Only create the chart if we actually have data
+            if (data.length > 0) {
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'],
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            } else {
+                ctx.font = "16px Arial";
+                ctx.fillText("No data to display", 10, 50);
+            }
+        };
+    </script>
+</body>
+</html>
