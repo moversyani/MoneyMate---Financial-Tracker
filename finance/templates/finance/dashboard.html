@@ -11,8 +11,22 @@
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-height: 400px; }
         .income-text { color: #27ae60; font-weight: bold; }
-        /* This ensures the chart actually has a visible area to draw in */
         .chart-container { position: relative; height: 300px; width: 100%; margin-top: 20px; }
+        
+        /* New styling for the delete button */
+        .btn-delete {
+            color: #e74c3c; 
+            text-decoration: none; 
+            font-size: 0.8em; 
+            border: 1px solid #e74c3c; 
+            padding: 2px 8px; 
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover {
+            background: #e74c3c;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -34,17 +48,25 @@
         <div class="box">
             <h3>Add a New Bill</h3>
             <form method="POST" style="margin-bottom: 20px;">
-                {% csrf_token %} {{ form.as_p }} <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                {% csrf_token %} 
+                {{ form.as_p }} 
+                <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
                     + Save Bill
-        </button>
-    </form>
+                </button>
+            </form>
 
-    <hr>
+            <hr>
             <h3>Recent Bills</h3>
             <ul style="list-style: none; padding: 0;">
                 {% for expense in expenses %}
-                    <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <strong>{{ expense.name }}</strong>: £{{ expense.amount }}
+                    <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <span><strong>{{ expense.name }}</strong>: £{{ expense.amount }}</span>
+                        
+                        <a href="{% url 'delete_expense' expense.pk %}" 
+                           onclick="return confirm('Are you sure you want to delete this bill?')"
+                           class="btn-delete">
+                           Delete
+                        </a>
                     </li>
                 {% empty %}
                     <li>No expenses found.</li>
@@ -54,15 +76,12 @@
     </div>
 
     <script>
-        // We wrap this in a function to ensure the page is fully loaded
         window.onload = function() {
             const ctx = document.getElementById('spendingChart').getContext('2d');
             
-            // Prepare the data from Django tags
             const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
             const data = [{% for e in expenses %}{{ e.amount }},{% endfor %}];
 
-            // Only create the chart if we actually have data
             if (data.length > 0) {
                 new Chart(ctx, {
                     type: 'pie',
