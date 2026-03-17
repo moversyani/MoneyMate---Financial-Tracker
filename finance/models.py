@@ -1,25 +1,33 @@
 from django.db import models
-from django.contrib.auth.models import User
 
+# Income Model: Stores where the money comes from
 class Income(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    source = models.CharField(max_length=100) # e.g., Salary, Side Hustle
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    label = models.CharField(max_length=100, default="Monthly Salary")
+    date_added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username}: £{self.amount}"
+        return f"{self.source} - £{self.amount}"
 
+# Expense Model: Stores where the money goes (with your refined categories!)
 class Expense(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Standardized categories for better data analysis
+    CATEGORY_CHOICES = [
+        ('MORTGAGE', 'Mortgage'),
+        ('INSURANCE', 'Insurances (Car/Life/House)'),
+        ('UTILITIES', 'Utilities (Gas/Water/Elec)'),
+        ('SUBSCRIPTIONS', 'Subscriptions (Netflix/Spotify)'),
+        ('GROCERIES', 'Groceries'),
+        ('DEBTS', 'Debts'),
+        ('FUEL', 'Fuel/Transport'),
+        ('LOANS', 'Loans / Car Finance'),
+        ('OTHERS', 'Others / One-off Payments'),
+    ]
+
     name = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    category = models.CharField(max_length=50, choices=[
-        ('Housing', 'Housing'),
-        ('Utilities', 'Utilities'),
-        ('Transport', 'Transport'),
-        ('Food', 'Food'),
-        ('Entertainment', 'Entertainment'),
-    ])
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='OTHERS')
+    date_added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name}: £{self.amount}"
+        return f"{self.name} - £{self.amount}"

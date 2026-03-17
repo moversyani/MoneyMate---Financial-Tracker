@@ -32,6 +32,14 @@
         </div>
 
         <div class="box">
+            <h3>Add a New Bill</h3>
+            <form method="POST" style="margin-bottom: 20px;">
+                {% csrf_token %} {{ form.as_p }} <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    + Save Bill
+        </button>
+    </form>
+
+    <hr>
             <h3>Recent Bills</h3>
             <ul style="list-style: none; padding: 0;">
                 {% for expense in expenses %}
