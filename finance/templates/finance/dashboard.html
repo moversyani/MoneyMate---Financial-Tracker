@@ -8,25 +8,16 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; }
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-height: 400px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
         .income-text { color: #27ae60; font-weight: bold; }
-        .chart-container { position: relative; height: 300px; width: 100%; margin-top: 20px; }
+        .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
         
-        /* New styling for the delete button */
-        .btn-delete {
-            color: #e74c3c; 
-            text-decoration: none; 
-            font-size: 0.8em; 
-            border: 1px solid #e74c3c; 
-            padding: 2px 8px; 
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .btn-delete:hover {
-            background: #e74c3c;
-            color: white;
-        }
+        .btn-delete { color: #e74c3c; text-decoration: none; font-size: 0.8em; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 4px; transition: all 0.2s; }
+        .btn-delete:hover { background: #e74c3c; color: white; }
+        
+        form p { margin-bottom: 10px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -37,48 +28,76 @@
     </div>
 
     <div class="dashboard-grid">
-        <div class="box">
-            <h3>Spending Breakdown</h3>
-            <p>Disposable Income: <strong>£{{ leftover }}</strong></p>
-            <div class="chart-container">
-                <canvas id="spendingChart"></canvas>
+        <div class="column">
+            <div class="box">
+                <h3>Spending Breakdown</h3>
+                <p>Total Income: <span class="income-text">£{{ total_income }}</span></p>
+                <p>Disposable Income: <strong>£{{ leftover }}</strong></p>
+                <div class="chart-container">
+                    <canvas id="spendingChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <div class="box">
-            <h3>Add a New Bill</h3>
-            <form method="POST" style="margin-bottom: 20px;">
-                {% csrf_token %} 
-                {{ form.as_p }} 
-                <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                    + Save Bill
-                </button>
-            </form>
+        <div class="column">
+            <div class="box">
+                <h3>1. Add Income Source</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ income_form.as_p }}
+                    <button type="submit" name="add_income" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">
+                        + Add Income
+                    </button>
+                </form>
+                <hr>
+                <ul style="list-style: none; padding: 0; font-size: 0.9em;">
+                    {% for inc in incomes %}
+                        <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>{{ inc.source }}</strong>: £{{ inc.amount }}</span>
+                            
+                            <a href="{% url 'delete_income' inc.pk %}" 
+                               onclick="return confirm('Remove this income source?')"
+                               class="btn-delete">
+                               Delete
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li>No income sources added.</li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-            <hr>
-            <h3>Recent Bills</h3>
-            <ul style="list-style: none; padding: 0;">
-                {% for expense in expenses %}
-                    <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                        <span><strong>{{ expense.name }}</strong>: £{{ expense.amount }}</span>
-                        
-                        <a href="{% url 'delete_expense' expense.pk %}" 
-                           onclick="return confirm('Are you sure you want to delete this bill?')"
-                           class="btn-delete">
-                           Delete
-                        </a>
-                    </li>
-                {% empty %}
-                    <li>No expenses found.</li>
-                {% endfor %}
-            </ul>
+            <div class="box">
+                <h3>2. Add a New Bill</h3>
+                <form method="POST">
+                    {% csrf_token %} 
+                    {{ expense_form.as_p }} 
+                    <button type="submit" name="add_expense" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">
+                        + Save Bill
+                    </button>
+                </form>
+
+                <hr>
+                <h3>Recent Bills</h3>
+                <ul style="list-style: none; padding: 0;">
+                    {% for expense in expenses %}
+                        <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>{{ expense.name }}</strong>: £{{ expense.amount }}</span>
+                            <a href="{% url 'delete_expense' expense.pk %}" 
+                               onclick="return confirm('Are you sure you want to delete this bill?')"
+                               class="btn-delete">Delete</a>
+                        </li>
+                    {% empty %}
+                        <li>No expenses found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
 
     <script>
         window.onload = function() {
             const ctx = document.getElementById('spendingChart').getContext('2d');
-            
             const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
             const data = [{% for e in expenses %}{{ e.amount }},{% endfor %}];
 
@@ -89,21 +108,19 @@
                         labels: labels,
                         datasets: [{
                             data: data,
-                            backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'],
+                            backgroundColor: ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e'],
                             hoverOffset: 10
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
+                        plugins: { legend: { position: 'bottom' } }
                     }
                 });
             } else {
                 ctx.font = "16px Arial";
-                ctx.fillText("No data to display", 10, 50);
+                ctx.fillText("No bills added yet.", 10, 50);
             }
         };
     </script>
