@@ -9,15 +9,17 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; min-height: 200px; }
         .income-text { color: #27ae60; font-weight: bold; }
         .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
         
         .btn-delete { color: #e74c3c; text-decoration: none; font-size: 0.8em; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 4px; transition: all 0.2s; }
         .btn-delete:hover { background: #e74c3c; color: white; }
+
+        .recommendation-card { background: #fff9e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #f39c12; }
         
-        form p { margin-bottom: 10px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        form p { margin: 0; }
     </style>
 </head>
 <body>
@@ -37,44 +39,47 @@
                     <canvas id="spendingChart"></canvas>
                 </div>
             </div>
+
+            <div class="box" style="border-top: 5px solid #f1c40f;">
+                <h3>💡 MoneyMate Intelligence</h3>
+                {% if recommendations %}
+                    {% for rec in recommendations %}
+                        <div class="recommendation-card">
+                            <span style="color: #d35400; font-weight: bold;">{{ rec.category }}</span><br>
+                            You spend £{{ rec.spent }}. Market average is £{{ rec.average }}.<br>
+                            <strong>Potential Saving: £{{ rec.potential_saving }}</strong>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #27ae60;">Spendings are healthy! No major savings found.</p>
+                {% endif %}
+            </div>
         </div>
 
         <div class="column">
             <div class="box">
-                <h3>1. Add Income Source</h3>
+                <h3>Add Income</h3>
                 <form method="POST">
                     {% csrf_token %}
                     {{ income_form.as_p }}
-                    <button type="submit" name="add_income" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">
-                        + Add Income
-                    </button>
+                    <button type="submit" name="add_income" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Add Income</button>
                 </form>
-                <hr>
-                <ul style="list-style: none; padding: 0; font-size: 0.9em;">
+                <ul style="list-style: none; padding: 0; margin-top: 15px;">
                     {% for inc in incomes %}
-                        <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                            <span><strong>{{ inc.source }}</strong>: £{{ inc.amount }}</span>
-                            
-                            <a href="{% url 'delete_income' inc.pk %}" 
-                               onclick="return confirm('Remove this income source?')"
-                               class="btn-delete">
-                               Delete
-                            </a>
+                        <li style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                            {{ inc.source }}: £{{ inc.amount }}
+                            <a href="{% url 'delete_income' inc.pk %}" class="btn-delete" onclick="return confirm('Delete income?')">Delete</a>
                         </li>
-                    {% empty %}
-                        <li>No income sources added.</li>
                     {% endfor %}
                 </ul>
             </div>
 
             <div class="box">
-                <h3>2. Add a New Bill</h3>
+                <h3>Add a New Bill</h3>
                 <form method="POST">
                     {% csrf_token %} 
                     {{ expense_form.as_p }} 
-                    <button type="submit" name="add_expense" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">
-                        + Save Bill
-                    </button>
+                    <button type="submit" name="add_expense" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Save Bill</button>
                 </form>
 
                 <hr>
@@ -82,10 +87,8 @@
                 <ul style="list-style: none; padding: 0;">
                     {% for expense in expenses %}
                         <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                            <span><strong>{{ expense.name }}</strong>: £{{ expense.amount }}</span>
-                            <a href="{% url 'delete_expense' expense.pk %}" 
-                               onclick="return confirm('Are you sure you want to delete this bill?')"
-                               class="btn-delete">Delete</a>
+                            <span><strong>{{ expense.name }}</strong> ({{ expense.category }}): £{{ expense.amount }}</span>
+                            <a href="{% url 'delete_expense' expense.pk %}" onclick="return confirm('Delete bill?')" class="btn-delete">Delete</a>
                         </li>
                     {% empty %}
                         <li>No expenses found.</li>
@@ -98,8 +101,21 @@
     <script>
         window.onload = function() {
             const ctx = document.getElementById('spendingChart').getContext('2d');
-            const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
-            const data = [{% for e in expenses %}{{ e.amount }},{% endfor %}];
+            
+            // Logic to group data by category for the chart
+            const rawData = [
+                {% for e in expenses %}
+                    { category: "{{ e.get_category_display }}", amount: {{ e.amount }} },
+                {% endfor %}
+            ];
+
+            const groupedData = rawData.reduce((acc, curr) => {
+                acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(groupedData);
+            const data = Object.values(groupedData);
 
             if (data.length > 0) {
                 new Chart(ctx, {
@@ -118,9 +134,6 @@
                         plugins: { legend: { position: 'bottom' } }
                     }
                 });
-            } else {
-                ctx.font = "16px Arial";
-                ctx.fillText("No bills added yet.", 10, 50);
             }
         };
     </script>
