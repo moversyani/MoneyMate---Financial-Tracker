@@ -1,5 +1,5 @@
 from django import forms
-from .models import Expense
+from .models import Expense, Income
 
 class ExpenseForm(forms.ModelForm):
     class Meta:
@@ -12,4 +12,13 @@ class ExpenseForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Netflix'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+class IncomeForm(forms.ModelForm):
+    class Meta:
+        model = Income
+        fields = ['source', 'amount']
+        widgets = {
+            'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Monthly Salary'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
         }
