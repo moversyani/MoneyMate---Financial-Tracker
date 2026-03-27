@@ -4,7 +4,6 @@ from .models import Income, Expense
 from .forms import ExpenseForm, IncomeForm
 
 def dashboard(request):
-    # 1. Handle Form Submissions
     if request.method == 'POST':
         if 'add_expense' in request.POST:
             form = ExpenseForm(request.POST)
@@ -18,16 +17,13 @@ def dashboard(request):
                 form.save()
                 return redirect('dashboard')
 
-    # 2. Fetch Data
     incomes = Income.objects.all()
     expenses = Expense.objects.all()
     
-    # 3. Calculate Totals
     total_income = sum(i.amount for i in incomes)
     total_expenses = sum(e.amount for e in expenses)
     leftover = total_income - total_expenses
 
-    # 4. SAVINGS ENGINE LOGIC
     benchmarks = {
         'UTILITIES': Decimal('150.00'),
         'SUBSCRIPTIONS': Decimal('40.00'),
@@ -49,7 +45,6 @@ def dashboard(request):
                 'potential_saving': savings
             })
 
-    # 5. Build Context
     context = {
         'total_income': total_income,
         'total_expenses': total_expenses,
