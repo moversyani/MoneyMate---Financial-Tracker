@@ -1,3 +1,7 @@
+<!-- dashboard.html - MoneyMate Dashboard
+     Commit 1: Adding sidebar navigation layout
+     The sidebar gives us a fixed left-hand menu for navigating between pages -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,152 +10,210 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        /* ========== RESET & BASE ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========== SIDEBAR ========== */
+        /* Fixed sidebar pinned to the left, stays visible when scrolling */
+        .sidebar {
+            width: 220px;
+            background: #2c3e50;
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-logo {
+            padding: 10px 20px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+        }
+        /* Small section headings like "FINANCES" and "COMPARE" */
+        .sidebar-section {
+            padding: 10px 20px 5px;
+            font-size: 0.7em;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+        }
+        /* Each sidebar link is a flex row with an icon and text */
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: #34495e;
+            color: #fff;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        /* Pushed right by 220px to sit next to the sidebar */
+        .main-content {
+            margin-left: 220px;
+            padding: 20px 30px;
+            flex: 1;
+        }
+
+        /* ========== EXISTING STYLES (kept from before) ========== */
         .header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
         .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; min-height: 200px; }
         .income-text { color: #27ae60; font-weight: bold; }
         .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
-        
         .btn-delete { color: #e74c3c; text-decoration: none; font-size: 0.8em; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 4px; transition: all 0.2s; }
         .btn-delete:hover { background: #e74c3c; color: white; }
-
         .recommendation-card { background: #fff9e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #f39c12; }
-        
         input, select { width: 100%; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
         form p { margin: 0; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>MoneyMate 💰</h2>
-        <div>Welcome, {{ user.username }}! | <a href="/admin/logout/" style="color: #3498db;">Logout</a></div>
+    <!-- SIDEBAR: Fixed navigation menu on the left side -->
+    <div class="sidebar">
+        <div class="sidebar-logo">MoneyMate 💰</div>
+        
+        <!-- Dashboard is the active page -->
+        <a href="{% url 'dashboard' %}" class="active">📊 Dashboard</a>
+        
+        <!-- Finances section links (pages to be built later) -->
+        <div class="sidebar-section">Finances</div>
+        <a href="#">💷 Income</a>
+        <a href="#">📄 Bills</a>
+        <a href="#">🎯 Savings Goals</a>
+        
+        <!-- Compare section links (pages to be built later) -->
+        <div class="sidebar-section">Compare</div>
+        <a href="#">🛡️ Insurance</a>
+        <a href="#">⚡ Energy</a>
+        <a href="#">🌐 Broadband</a>
     </div>
 
-    <div class="dashboard-grid">
-        <div class="column">
-            <div class="box">
-                <h3>Spending Breakdown</h3>
-                <p>Total Income: <span class="income-text">£{{ total_income }}</span></p>
-                <p>Disposable Income: <strong>£{{ leftover }}</strong></p>
-                <div class="chart-container">
-                    <canvas id="spendingChart"></canvas>
+    <!-- MAIN CONTENT: Everything to the right of the sidebar -->
+    <div class="main-content">
+
+        <!-- Top header bar with welcome message -->
+        <div class="header">
+            <h2>Dashboard</h2>
+            <div>Welcome, {{ user.username }}! | <a href="/admin/logout/" style="color: #3498db;">Logout</a></div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="column">
+                <div class="box">
+                    <h3>Spending Breakdown</h3>
+                    <p>Total Income: <span class="income-text">£{{ total_income }}</span></p>
+                    <p>Disposable Income: <strong>£{{ leftover }}</strong></p>
+                    <div class="chart-container">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="box" style="border-top: 5px solid #f1c40f;">
+                    <h3>💡 MoneyMate Intelligence</h3>
+                    {% if recommendations %}
+                        {% for rec in recommendations %}
+                            <div class="recommendation-card">
+                                <span style="color: #d35400; font-weight: bold;">{{ rec.category }}</span><br>
+                                You spend £{{ rec.spent }}. Market average is £{{ rec.average }}.<br>
+                                <strong>Potential Saving: £{{ rec.potential_saving }}</strong>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #27ae60;">Spendings are healthy! No major savings found.</p>
+                    {% endif %}
                 </div>
             </div>
 
-            <div class="box" style="border-top: 5px solid #f1c40f;">
-                <h3>💡 MoneyMate Intelligence</h3>
-                {% if recommendations %}
-                    {% for rec in recommendations %}
-                        <div class="recommendation-card">
-                            <span style="color: #d35400; font-weight: bold;">{{ rec.category }}</span><br>
-                            You spend £{{ rec.spent }}. Market average is £{{ rec.average }}.<br>
-                            <strong>Potential Saving: £{{ rec.potential_saving }}</strong>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="color: #27ae60;">Spendings are healthy! No major savings found.</p>
-                {% endif %}
-            </div>
-        </div>
+            <div class="column">
+                <div class="box">
+                    <h3>Add Income</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ income_form.as_p }}
+                        <button type="submit" name="add_income" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Add Income</button>
+                    </form>
+                    <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                        {% for inc in incomes %}
+                            <li style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                                {{ inc.source }}: £{{ inc.amount }}
+                                <a href="{% url 'delete_income' inc.pk %}" class="btn-delete" onclick="return confirm('Delete income?')">Delete</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
 
-        <div class="column">
-            <div class="box">
-                <h3>Add Income</h3>
-                <form method="POST">
-                    {% csrf_token %}
-                    {{ income_form.as_p }}
-                    <button type="submit" name="add_income" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Add Income</button>
-                </form>
-                <ul style="list-style: none; padding: 0; margin-top: 15px;">
-                    {% for inc in incomes %}
-                        <li style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
-                            {{ inc.source }}: £{{ inc.amount }}
-                            <a href="{% url 'delete_income' inc.pk %}" class="btn-delete" onclick="return confirm('Delete income?')">Delete</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="box">
-                <h3>Add a New Bill</h3>
-                <form method="POST">
-                    {% csrf_token %} 
-                    {{ expense_form.as_p }} 
-                    <button type="submit" name="add_expense" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Save Bill</button>
-                </form>
-
-                <hr>
-                <h3>Recent Bills</h3>
-                <ul style="list-style: none; padding: 0;">
-                    {% for expense in expenses %}
-                        <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                            <span><strong>{{ expense.name }}</strong> ({{ expense.category }}): £{{ expense.amount }}</span>
-                            <a href="{% url 'delete_expense' expense.pk %}" onclick="return confirm('Delete bill?')" class="btn-delete">Delete</a>
-                        </li>
-                    {% empty %}
-                        <li>No expenses found.</li>
-                    {% endfor %}
-                </ul>
+                <div class="box">
+                    <h3>Add a New Bill</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ expense_form.as_p }}
+                        <button type="submit" name="add_expense" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Save Bill</button>
+                    </form>
+                    <hr>
+                    <h3>Recent Bills</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        {% for expense in expenses %}
+                            <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                                <span><strong>{{ expense.name }}</strong> ({{ expense.category }}): £{{ expense.amount }}</span>
+                                <a href="{% url 'delete_expense' expense.pk %}" onclick="return confirm('Delete bill?')" class="btn-delete">Delete</a>
+                            </li>
+                        {% empty %}
+                            <li>No expenses found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- CHART SCRIPT: Same as before, builds doughnut from expense data -->
     <script>
     window.onload = function() {
         const ctx = document.getElementById('spendingChart').getContext('2d');
-        
-        // 1. We grab the name AND the category for a "technical" label
         const labels = [
             {% for e in expenses %}
                 "{{ e.name }} ({{ e.get_category_display }})",
             {% endfor %}
         ];
-        
         const data = [
             {% for e in expenses %}
                 {{ e.amount }},
             {% endfor %}
         ];
-
-        // 2. Generate dynamic colors so every bill looks different
         const colors = data.map((_, i) => `hsl(${i * (360 / data.length)}, 70%, 60%)`);
-
         if (data.length > 0) {
             new Chart(ctx, {
-                type: 'doughnut', // 'doughnut' looks slightly more modern/technical than 'pie'
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors,
-                        hoverOffset: 15,
-                        borderWidth: 2
-                    }]
-                },
+                type: 'doughnut',
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, hoverOffset: 15, borderWidth: 2 }] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { 
-                            position: 'bottom',
-                            labels: { boxWidth: 12, padding: 15, font: { size: 11 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                // 3. Technical Tooltip: Shows the amount AND the % of total spend
-                                label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const value = context.raw;
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return ` £${value} (${percentage}%)`;
-                                }
-                            }
-                        }
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const value = context.raw;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return ` £${value} (${percentage}%)`;
+                        }}}
                     },
-                    // Gives it that nice "cutout" look
-                    cutout: '60%' 
+                    cutout: '60%'
                 }
             });
         } else {
@@ -159,6 +221,6 @@
             ctx.fillText("No bills added yet.", 10, 50);
         }
     };
-</script>
+    </script>
 </body>
 </html>
