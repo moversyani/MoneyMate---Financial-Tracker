@@ -1,226 +1,731 @@
-<!-- dashboard.html - MoneyMate Dashboard
-     Commit 1: Adding sidebar navigation layout
-     The sidebar gives us a fixed left-hand menu for navigating between pages -->
+<!-- dashboard.html — MoneyMate Dashboard (Dark Theme)
+     Context from views.py: total_income, total_expenses, leftover,
+     incomes, expenses, recommendations, income_form, expense_form -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>MoneyMate Dashboard</title>
+    <meta charset="UTF-8" />
+    <title>MoneyMate — Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+
     <style>
-        /* ========== RESET & BASE ========== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* --- Reset & tokens --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:       #10b981;
+            --green-dark:  #059669;
+            --green-dim:   rgba(16,185,129,0.12);
+            --bg-page:     #0f1117;
+            --bg-card:     #1a1d27;
+            --bg-input:    #21253a;
+            --bg-bar:      #13151f;
+            --text-1:      #e8eaf0;  /* primary text */
+            --text-2:      #8b92a8;  /* secondary / muted */
+            --text-3:      #555c72;  /* faint / placeholders */
+            --border:      rgba(255,255,255,0.07);
+            --red:         #f87171;
+            --red-dim:     rgba(248,113,113,0.12);
+            --blue:        #60a5fa;
+            --amber:       #fbbf24;
+            --amber-dim:   rgba(251,191,36,0.10);
+            --amber-bdr:   rgba(251,191,36,0.25);
+            --sidebar-w:   220px;
+            --topbar-h:    56px;
+            --r:           12px;   /* card radius */
+            --r-sm:        8px;    /* input radius */
+            --pill:        100px;  /* fully rounded */
+        }
+
+        /* --- Base --- */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-1);
             min-height: 100vh;
         }
 
-        /* ========== SIDEBAR ========== */
-        /* Fixed sidebar pinned to the left, stays visible when scrolling */
+        /* --- Topbar --- */
+        .topbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+            height: var(--topbar-h);
+            background: var(--bg-bar);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+        }
+        .topbar-brand {
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
+            color: var(--text-1); text-decoration: none; display: flex; align-items: center; gap: 8px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+        /* Month badge */
+        .topbar-month {
+            font-size: 12px; color: var(--text-3);
+            background: var(--bg-input); padding: 4px 12px;
+            border-radius: var(--pill); border: 1px solid var(--border);
+        }
+        /* Username + avatar */
+        .topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+        .topbar-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--green-dim); border: 1px solid var(--green);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green);
+        }
+        /* Logout pill link */
+        .topbar-logout {
+            font-size: 12px; color: var(--text-3); text-decoration: none;
+            padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border);
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .topbar-logout:hover { color: var(--text-1); border-color: rgba(255,255,255,0.25); }
+
+        /* --- Layout shell --- */
+        .app-body { display: flex; padding-top: var(--topbar-h); min-height: 100vh; }
+
+        /* --- Sidebar --- */
         .sidebar {
-            width: 220px;
-            background: #2c3e50;
-            padding: 20px 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            overflow-y: auto;
+            width: var(--sidebar-w); flex-shrink: 0;
+            background: var(--bg-card); border-right: 1px solid var(--border);
+            padding: 20px 0; position: fixed;
+            top: var(--topbar-h); bottom: 0; left: 0;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
         }
-        .sidebar-logo {
-            padding: 10px 20px 30px;
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #fff;
+        .sb-section {
+            padding: 16px 18px 5px; font-size: 10px; font-weight: 500;
+            letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
         }
-        /* Small section headings like "FINANCES" and "COMPARE" */
-        .sidebar-section {
-            padding: 10px 20px 5px;
-            font-size: 0.7em;
-            text-transform: uppercase;
-            color: #7f8c8d;
-            letter-spacing: 1px;
+        .sb-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 18px; font-size: 13px; color: var(--text-2);
+            text-decoration: none; border-left: 2px solid transparent;
+            transition: background 0.15s, color 0.15s;
         }
-        /* Each sidebar link is a flex row with an icon and text */
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            color: #bdc3c7;
-            text-decoration: none;
-            font-size: 0.9em;
-            transition: background 0.2s;
+        .sb-item:hover { background: var(--bg-input); color: var(--text-1); }
+        .sb-item.active { background: var(--green-dim); color: var(--green); border-left-color: var(--green); font-weight: 500; }
+        .sb-icon { font-size: 14px; width: 18px; text-align: center; }
+
+        /* --- Main content --- */
+        .main { margin-left: var(--sidebar-w); flex: 1; padding: 24px; max-width: 1200px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+
+        /* --- Metric cards row --- */
+        .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
+        .metric { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
+        .metric-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        /* DM Sans keeps money values looking clean and neutral */
+        .metric-val { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 500; line-height: 1; }
+        .metric-val.g { color: var(--green); }
+        .metric-val.r { color: var(--red); }
+        .metric-val.b { color: var(--blue); }
+        .metric-sub { font-size: 11px; color: var(--text-3); margin-top: 6px; }
+
+        /* --- Two-column grid --- */
+        .grid-2 { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 16px; }
+        .col { display: flex; flex-direction: column; gap: 16px; }
+
+        /* --- Card --- */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; }
+        .card-title {
+            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
         }
-        .sidebar a:hover, .sidebar a.active {
-            background: #34495e;
-            color: #fff;
+        .pill {
+            font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: var(--pill);
+            background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25);
         }
 
-        /* ========== MAIN CONTENT ========== */
-        /* Pushed right by 220px to sit next to the sidebar */
-        .main-content {
-            margin-left: 220px;
-            padding: 20px 30px;
-            flex: 1;
-        }
+        /* --- Chart --- */
+        .chart-wrap { position: relative; height: 240px; width: 100%; }
+        .chart-summary { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .cs-label { font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
+        .cs-val { font-size: 15px; font-weight: 500; }
+        .cs-val.g { color: var(--green); }
+        .cs-val.r { color: var(--red); }
 
-        /* ========== EXISTING STYLES (kept from before) ========== */
-        .header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 10px; margin-bottom: 20px; }
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; min-height: 200px; }
-        .income-text { color: #27ae60; font-weight: bold; }
-        .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
-        .btn-delete { color: #e74c3c; text-decoration: none; font-size: 0.8em; border: 1px solid #e74c3c; padding: 2px 8px; border-radius: 4px; transition: all 0.2s; }
-        .btn-delete:hover { background: #e74c3c; color: white; }
-        .recommendation-card { background: #fff9e6; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #f39c12; }
-        input, select { width: 100%; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        form p { margin: 0; }
+        /* --- Intelligence tip cards --- */
+        .tip { background: var(--amber-dim); border: 1px solid var(--amber-bdr); border-radius: var(--r-sm); padding: 13px 15px; margin-bottom: 10px; }
+        .tip:last-child { margin-bottom: 0; }
+        .tip-title { font-size: 13px; font-weight: 500; color: var(--amber); margin-bottom: 5px; }
+        .tip-body { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+        .tip-saving { font-weight: 500; color: var(--green); }
+        .tip-ok { font-size: 13px; color: var(--green); }
+
+        /* --- Forms (styles Django's form.as_p output) --- */
+        form p { margin-bottom: 12px; }
+        form p label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+        form p input, form p select {
+            width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            background: var(--bg-input); border: 1px solid rgba(255,255,255,0.10);
+            border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s;
+        }
+        form p input::placeholder { color: var(--text-3); }
+        form p input:focus, form p select:focus { border-color: var(--green); }
+        form p select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b92a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+        }
+        form p select option { background: var(--bg-input); color: var(--text-1); }
+
+        /* --- Buttons --- */
+        .btn { width: 100%; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: #fff; border: none; border-radius: var(--pill); cursor: pointer; transition: filter 0.2s, transform 0.15s; }
+        .btn:hover { filter: brightness(0.88); transform: translateY(-1px); }
+        .btn-green { background: var(--green); }
+        .btn-blue  { background: #3b82f6; }
+
+        /* --- List items (income + bills) --- */
+        .item-list { list-style: none; padding: 0; margin-top: 14px; }
+        .item-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .item-list li:last-child { border-bottom: none; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .item-info { flex: 1; }
+        .item-name { font-weight: 500; color: var(--text-1); }
+        .item-cat  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+        .item-amt  { font-weight: 500; flex-shrink: 0; }
+        /* Delete button — goes red on hover */
+        .btn-del {
+            font-size: 11px; color: var(--text-3); text-decoration: none;
+            padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+
+        .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+        /* --- API comparison rows --- */
+        .api-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+        .api-row:last-child { border-bottom: none; }
+        .api-icon { width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--bg-input); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+        .api-info { flex: 1; }
+        .api-name   { font-size: 13px; font-weight: 500; }
+        .api-source { font-size: 11px; color: var(--text-3); }
+        .api-link {
+            font-size: 12px; color: var(--blue); font-weight: 500; text-decoration: none;
+            padding: 4px 10px; border-radius: var(--pill); border: 1px solid rgba(96,165,250,0.3);
+            white-space: nowrap; transition: background 0.2s;
+        }
+        .api-link:hover { background: rgba(96,165,250,0.1); }
+
+        /* Pulse animation — used on the scanning dot and page loader */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.75); }
+        }
+        /* Page loader overlay — covers screen during navigation */
+        #page-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg-page);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+            transition: opacity 0.3s;
+        }
+        #page-loader.hidden { opacity: 0; pointer-events: none; }
+        .loader-logo { animation: pulse 1.2s ease-in-out infinite; }
+        .loader-text { font-size: 13px; color: var(--text-3); font-family: 'DM Sans', sans-serif; }
+
+        /* Deal card — green bordered tip shown when a deal is found */
+        .deal {
+            background: var(--green-dim);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: var(--r-sm);
+            padding: 13px 15px;
+            margin-bottom: 10px;
+            animation: fadeIn 0.4s ease both;
+        }
+        .deal:last-child { margin-bottom: 0; }
+        .deal-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .deal-badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: var(--pill); background: var(--green); color: #0a0f0d; }
+        .deal-title { font-size: 13px; font-weight: 500; color: var(--green); }
+        .deal-body  { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+        .deal-saving { font-weight: 500; color: var(--green); }
+        .deal-link { font-size: 12px; color: var(--blue); text-decoration: none; margin-top: 8px; display: inline-block; }
+        .deal-link:hover { text-decoration: underline; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR: Fixed navigation menu on the left side -->
-    <div class="sidebar">
-        <div class="sidebar-logo">MoneyMate 💰</div>
-        
-        <!-- Dashboard is the active page -->
-        <a href="{% url 'dashboard' %}" class="active">📊 Dashboard</a>
-        
-        <!-- Finances section links (pages to be built later) -->
-        <div class="sidebar-section">Finances</div>
-        <a href="#">💷 Income</a>
-        <a href="#">📄 Bills</a>
-        <a href="#">🎯 Savings Goals</a>
-        
-        <!-- Compare section links (pages to be built later) -->
-        <div class="sidebar-section">Compare</div>
-        <a href="#">🛡️ Insurance</a>
-        <a href="#">⚡ Energy</a>
-        <a href="#">🌐 Broadband</a>
+<!-- TOPBAR -->
+<header class="topbar">
+    <a href="{% url 'dashboard' %}" class="topbar-brand">
+        <!-- Inline SVG logo — no external files needed -->
+        <svg height="42" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <defs>
+                <linearGradient id="tblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                <linearGradient id="tgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                <linearGradient id="tarrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+            </defs>
+            <!-- Left figure head -->
+            <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#tblue)"/>
+            <!-- Left figure body -->
+            <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#tblue)"/>
+            <!-- Right figure head -->
+            <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#tgreen)"/>
+            <!-- Right figure body -->
+            <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#tgreen)"/>
+            <!-- Handshake -->
+            <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Dollar sign -->
+            <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+            <!-- M / arrow shape -->
+            <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#tarrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <!-- Arrow head -->
+            <polygon points="44,13 54,17 47,24" fill="url(#tarrow)"/>
+            <!-- MONEY in dark navy -->
+            <text x="64" y="36" font-family="'Arial Black',sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+            <!-- Tagline -->
+            <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+        </svg>
+    </a>
+    <div class="topbar-right">
+        <span class="topbar-month">April 2026</span>
+        <div class="topbar-user">
+            <!-- First letter of username shown as avatar -->
+            <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
+            {{ user.username }}
+        </div>
+        <!-- TODO: move to Django auth logout once login/signup pages are built -->
+        <a href="/admin/logout/" class="topbar-logout">Log out</a>
     </div>
+</header>
 
-    <!-- MAIN CONTENT: Everything to the right of the sidebar -->
-    <div class="main-content">
+<div class="app-body">
 
-        <!-- Top header bar with welcome message -->
-        <div class="header">
-            <h2>Dashboard</h2>
-            <div>Welcome, {{ user.username }}! | <a href="/admin/logout/" style="color: #3498db;">Logout</a></div>
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sb-section">Overview</div>
+        <a href="{% url 'dashboard' %}" class="sb-item active">
+            <span class="sb-icon">📊</span> Dashboard
+        </a>
+
+        <div class="sb-section">Finances</div>
+        <!-- These link to # until their views are built -->
+        <a href="#" class="sb-item"><span class="sb-icon">💷</span> Income</a>
+        <a href="#" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
+        <a href="#" class="sb-item"><span class="sb-icon">🎯</span> Savings Goals</a>
+
+        <div class="sb-section">Compare &amp; Save</div>
+        <!-- These link to # until the API pages are built -->
+        <a href="#" class="sb-item"><span class="sb-icon">🚗</span> Car Insurance</a>
+        <a href="#" class="sb-item"><span class="sb-icon">⚡</span> Energy</a>
+        <a href="#" class="sb-item"><span class="sb-icon">📡</span> Broadband</a>
+        <a href="#" class="sb-item"><span class="sb-icon">🏠</span> Home Insurance</a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+        <div class="page-title">Dashboard</div>
+
+        <!-- METRIC CARDS — values injected from views.py context -->
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-label">Total income</div>
+                <div class="metric-val g">£{{ total_income }}</div>
+                <div class="metric-sub">This month</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Total bills</div>
+                <div class="metric-val r">£{{ total_expenses }}</div>
+                <!-- pluralize adds "s" when count is 0 or >1 -->
+                <div class="metric-sub">{{ expenses|length }} active bill{{ expenses|length|pluralize }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Disposable income</div>
+                <div class="metric-val">£{{ leftover }}</div>
+                <div class="metric-sub">Free to spend</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Savings tips</div>
+                <div class="metric-val b">{{ recommendations|length }}</div>
+                <div class="metric-sub">
+                    {% if recommendations %}area{{ recommendations|length|pluralize }} to review
+                    {% else %}All looks healthy!{% endif %}
+                </div>
+            </div>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="column">
-                <div class="box">
-                    <h3>Spending Breakdown</h3>
-                    <p>Total Income: <span class="income-text">£{{ total_income }}</span></p>
-                    <p>Disposable Income: <strong>£{{ leftover }}</strong></p>
-                    <div class="chart-container">
+        <!-- TWO-COLUMN GRID -->
+        <div class="grid-2">
+
+            <!-- LEFT COL -->
+            <div class="col">
+
+                <!-- Spending chart card -->
+                <div class="card">
+                    <div class="card-title">
+                        Spending breakdown <span class="pill">This month</span>
+                    </div>
+                    <div class="chart-wrap">
                         <canvas id="spendingChart"></canvas>
+                    </div>
+                    <!-- Summary figures below the chart -->
+                    <div class="chart-summary">
+                        <div><div class="cs-label">Total income</div><div class="cs-val g">£{{ total_income }}</div></div>
+                        <div><div class="cs-label">Total bills</div><div class="cs-val r">£{{ total_expenses }}</div></div>
+                        <div><div class="cs-label">Disposable</div><div class="cs-val">£{{ leftover }}</div></div>
                     </div>
                 </div>
 
-                <div class="box" style="border-top: 5px solid #f1c40f;">
-                    <h3>💡 MoneyMate Intelligence</h3>
+                <!-- Intelligence card: Django tips + JS-powered simulated deal scanner -->
+                <div class="card">
+                    <div class="card-title">
+                        💡 MoneyMate Intelligence
+                        <!-- Animated scanning dot shown while JS deals are loading -->
+                        <span id="scan-badge" style="font-size:11px;color:var(--text-3);font-family:'DM Sans',sans-serif;font-weight:400;display:flex;align-items:center;gap:5px;margin-left:auto;">
+                            <span id="scan-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.2s ease-in-out infinite;"></span>
+                            Scanning for deals...
+                        </span>
+                    </div>
+
+                    <!-- Django tips: shown when a category exceeds its benchmark in views.py -->
                     {% if recommendations %}
                         {% for rec in recommendations %}
-                            <div class="recommendation-card">
-                                <span style="color: #d35400; font-weight: bold;">{{ rec.category }}</span><br>
-                                You spend £{{ rec.spent }}. Market average is £{{ rec.average }}.<br>
-                                <strong>Potential Saving: £{{ rec.potential_saving }}</strong>
+                            <div class="tip">
+                                <div class="tip-title">{{ rec.category }}</div>
+                                <div class="tip-body">
+                                    {% if rec.companies %}
+                                        <!-- Show which companies make up this category total -->
+                                        With: <strong style="color:var(--amber);">{{ rec.companies|join:", " }}</strong><br/>
+                                    {% endif %}
+                                    Combined spend: £{{ rec.spent }}. Market average: £{{ rec.average }}.<br />
+                                    Potential saving: <span class="tip-saving">£{{ rec.potential_saving }}/mo</span>
+                                </div>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p style="color: #27ae60;">Spendings are healthy! No major savings found.</p>
+                        <p class="tip-ok" style="margin-bottom:10px;">✓ Your spending looks healthy. No major savings found.</p>
                     {% endif %}
-                </div>
-            </div>
 
-            <div class="column">
-                <div class="box">
-                    <h3>Add Income</h3>
+                    <!-- JS deal cards injected here by the simulated scanner below -->
+                    <div id="deal-cards"></div>
+                </div>
+
+                <!-- Compare & Save — static redirect links, live API integration in next phase -->
+                <div class="card">
+                    <div class="card-title">🔄 Compare &amp; Save</div>
+                    <div class="api-row">
+                        <div class="api-icon">🚗</div>
+                        <div class="api-info"><div class="api-name">Car insurance</div><div class="api-source">MoneySupermarket</div></div>
+                        <a class="api-link" href="https://www.moneysupermarket.com/car-insurance/" target="_blank">Compare →</a>
+                    </div>
+                    <div class="api-row">
+                        <div class="api-icon">⚡</div>
+                        <div class="api-info"><div class="api-name">Energy tariffs</div><div class="api-source">Ofgem open data</div></div>
+                        <a class="api-link" href="https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you" target="_blank">Compare →</a>
+                    </div>
+                    <div class="api-row">
+                        <div class="api-icon">📡</div>
+                        <div class="api-info"><div class="api-name">Broadband</div><div class="api-source">Uswitch</div></div>
+                        <a class="api-link" href="https://www.uswitch.com/broadband/" target="_blank">Compare →</a>
+                    </div>
+                    <div class="api-row">
+                        <div class="api-icon">🏠</div>
+                        <div class="api-info"><div class="api-name">Home insurance</div><div class="api-source">Compare the Market</div></div>
+                        <a class="api-link" href="https://www.comparethemarket.com/home-insurance/" target="_blank">Compare →</a>
+                    </div>
+                </div>
+
+            </div>
+            <!-- END LEFT COL -->
+
+            <!-- RIGHT COL -->
+            <div class="col">
+
+                <!-- Add Income form -->
+                <div class="card">
+                    <div class="card-title">Add Income</div>
                     <form method="POST">
                         {% csrf_token %}
                         {{ income_form.as_p }}
-                        <button type="submit" name="add_income" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Add Income</button>
+                        <!-- name="add_income" tells views.py which form was submitted -->
+                        <button type="submit" name="add_income" class="btn btn-green">+ Add Income</button>
                     </form>
-                    <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                    <!-- Existing income records -->
+                    <ul class="item-list">
                         {% for inc in incomes %}
-                            <li style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
-                                {{ inc.source }}: £{{ inc.amount }}
-                                <a href="{% url 'delete_income' inc.pk %}" class="btn-delete" onclick="return confirm('Delete income?')">Delete</a>
+                            <li>
+                                <div class="dot" style="background: var(--green);"></div>
+                                <div class="item-info"><div class="item-name">{{ inc.source }}</div></div>
+                                <span class="item-amt">£{{ inc.amount }}</span>
+                                <a href="{% url 'delete_income' inc.pk %}" class="btn-del" onclick="return confirm('Delete this income?')">×</a>
                             </li>
+                        {% empty %}
+                            <li style="color: var(--text-3); font-size: 13px;">No income added yet.</li>
                         {% endfor %}
                     </ul>
                 </div>
 
-                <div class="box">
-                    <h3>Add a New Bill</h3>
+                <!-- Add Bill form -->
+                <div class="card">
+                    <div class="card-title">Add a New Bill</div>
                     <form method="POST">
                         {% csrf_token %}
                         {{ expense_form.as_p }}
-                        <button type="submit" name="add_expense" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">+ Save Bill</button>
+                        <!-- name="add_expense" tells views.py which form was submitted -->
+                        <button type="submit" name="add_expense" class="btn btn-blue">+ Save Bill</button>
                     </form>
-                    <hr>
-                    <h3>Recent Bills</h3>
-                    <ul style="list-style: none; padding: 0;">
+                    <div class="divider"></div>
+                    <div class="card-title" style="margin-bottom: 8px;">Recent Bills</div>
+                    <!-- Existing expense records -->
+                    <ul class="item-list">
                         {% for expense in expenses %}
-                            <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                                <span><strong>{{ expense.name }}</strong> ({{ expense.category }}): £{{ expense.amount }}</span>
-                                <a href="{% url 'delete_expense' expense.pk %}" onclick="return confirm('Delete bill?')" class="btn-delete">Delete</a>
+                            <li>
+                                <!-- hsl shifts 40° per item so each bill gets a unique colour -->
+                                <div class="dot" style="background: hsl({{ forloop.counter0 }}40, 70%, 60%);"></div>
+                                <div class="item-info">
+                                    <div class="item-name">
+                                        {{ expense.name }}
+                                        <!-- Company badge shown inline next to bill name if set -->
+                                        {% if expense.company %}
+                                            <span style="font-size:10px;font-weight:500;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;vertical-align:middle;">
+                                                {{ expense.company }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="item-cat">{{ expense.get_category_display }}</div>
+                                </div>
+                                <span class="item-amt">£{{ expense.amount }}</span>
+                                <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="return confirm('Delete this bill?')">×</a>
                             </li>
                         {% empty %}
-                            <li>No expenses found.</li>
+                            <li style="color: var(--text-3); font-size: 13px;">No bills added yet.</li>
                         {% endfor %}
                     </ul>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- CHART SCRIPT: Same as before, builds doughnut from expense data -->
-    <script>
-    window.onload = function() {
-        const ctx = document.getElementById('spendingChart').getContext('2d');
-        const labels = [
-            {% for e in expenses %}
-                "{{ e.name }} ({{ e.get_category_display }})",
-            {% endfor %}
-        ];
-        const data = [
-            {% for e in expenses %}
-                {{ e.amount }},
-            {% endfor %}
-        ];
-        const colors = data.map((_, i) => `hsl(${i * (360 / data.length)}, 70%, 60%)`);
-        if (data.length > 0) {
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, hoverOffset: 15, borderWidth: 2 }] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 11 } } },
-                        tooltip: { callbacks: { label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const value = context.raw;
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return ` £${value} (${percentage}%)`;
-                        }}}
-                    },
-                    cutout: '60%'
-                }
-            });
-        } else {
-            ctx.font = "16px Arial";
-            ctx.fillText("No bills added yet.", 10, 50);
+            </div>
+            <!-- END RIGHT COL -->
+
+        </div>
+        <!-- END GRID -->
+
+    </main>
+</div>
+
+<!-- CHART SCRIPT
+     Django injects expense labels and amounts directly into the JS arrays at render time.
+     Chart.js then reads those arrays to build the doughnut. -->
+<script>
+window.onload = function () {
+    // Hide the page loader overlay once everything has rendered
+    const loader = document.getElementById('page-loader');
+    if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); }
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+
+    // Labels and data injected by Django template engine
+    // Show bill name only — no category brackets under the chart
+    const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
+    const data   = [{% for e in expenses %}{{ e.amount }},{% endfor %}];
+
+    // Evenly spaced hsl colours — one per slice
+    const colors = data.map((_, i) => `hsl(${i * (360 / (data.length || 1))}, 65%, 58%)`);
+
+    if (data.length > 0) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data, backgroundColor: colors, hoverOffset: 10, borderWidth: 2, borderColor: '#1a1d27' }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14, font: { size: 11, family: 'DM Sans' }, color: '#8b92a8' } },
+                    tooltip: { callbacks: { label: ctx => {
+                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                        return ` £${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`;
+                    }}}
+                },
+                cutout: '65%'
+            }
+        });
+    } else {
+        // Fallback when no expenses exist
+        ctx.font = "14px 'DM Sans'"; ctx.fillStyle = '#555c72'; ctx.textAlign = 'center';
+        ctx.fillText('No bills added yet.', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    }
+};
+</script>
+
+<!-- PAGE LOADER OVERLAY
+     Shows a pulsing logo while the page loads.
+     Hidden immediately once window.onload fires. -->
+<div id="page-loader">
+    <div class="loader-logo">
+        <svg height="80" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="lblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                <linearGradient id="lgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                <linearGradient id="larrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+            </defs>
+            <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#lblue)"/>
+            <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#lblue)"/>
+            <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#lgreen)"/>
+            <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#lgreen)"/>
+            <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+            <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#larrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <polygon points="44,13 54,17 47,24" fill="url(#larrow)"/>
+            <text x="64" y="36" font-family="Arial Black,sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+            <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+        </svg>
+    </div>
+    <div class="loader-text">Loading MoneyMate...</div>
+</div>
+
+<!-- DEAL SCANNER SCRIPT
+     Simulates an active background scan for cheaper deals.
+     In production this would call real comparison APIs.
+     Deals are matched against the user's actual expense categories
+     injected by Django into the `userCategories` array. -->
+<script>
+(function () {
+
+    // Django injects the user's actual bill data as an array of objects
+    // Each object has category, company name, and amount
+    const userBills = [
+        {% for e in expenses %}
+        { category: "{{ e.category }}", company: "{{ e.company|default:'' }}", name: "{{ e.name }}", amount: {{ e.amount }} },
+        {% endfor %}
+    ];
+
+    // Helper: check if user has a bill in a given category
+    const hasCategory = (cat) => userBills.some(b => b.category === cat);
+
+    // Helper: get the company name for a category (used to personalise the deal body)
+    const getCompany = (cat) => {
+        const bill = userBills.find(b => b.category === cat);
+        return bill && bill.company ? bill.company : null;
+    };
+
+    // Simulated deal database — only shown if the user has that category
+    // In production, replace each entry with a live API response
+    const dealPool = {
+        'INSURANCE': {
+            icon: '🚗',
+            title: 'Cheaper insurance found',
+            provider: 'Admiral via MoneySupermarket',
+            saving: '£312/yr',
+            body: (co) => `You currently pay ${co ? `with <strong>${co}</strong>` : 'for insurance'}. A cheaper policy is available right now.`,
+            link: 'https://www.moneysupermarket.com/car-insurance/',
+            linkText: 'View deal →'
+        },
+        'UTILITIES': {
+            icon: '⚡',
+            title: 'Better energy tariff available',
+            provider: 'Octopus Energy via Ofgem data',
+            saving: '£180/yr',
+            body: (co) => `Your ${co ? `<strong>${co}</strong> ` : ''}energy spend is above the Ofgem price cap benchmark.`,
+            link: 'https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you',
+            linkText: 'Check tariffs →'
+        },
+        'MOBILE': {
+            icon: '📱',
+            title: 'Cheaper mobile plan found',
+            provider: 'iD Mobile via Uswitch',
+            saving: '£96/yr',
+            body: (co) => `A SIM-only deal is cheaper than your ${co ? `<strong>${co}</strong> ` : ''}plan.`,
+            link: 'https://www.uswitch.com/mobiles/',
+            linkText: 'View deal →'
+        },
+        'MORTGAGE': {
+            icon: '🏠',
+            title: 'Remortgage deal available',
+            provider: 'HSBC via MoneySupermarket',
+            saving: '£600/yr',
+            body: () => 'Current fixed-rate deals are lower than your existing rate.',
+            link: 'https://www.moneysupermarket.com/mortgages/',
+            linkText: 'Compare rates →'
+        },
+        'LOANS': {
+            icon: '🚙',
+            title: 'Lower car finance rate found',
+            provider: 'Zuto via Compare the Market',
+            saving: '£240/yr',
+            body: (co) => `Refinancing your ${co ? `<strong>${co}</strong> ` : ''}agreement could reduce your monthly payment.`,
+            link: 'https://www.comparethemarket.com/car-finance/',
+            linkText: 'Check eligibility →'
+        },
+        'GROCERIES': {
+            icon: '🛒',
+            title: 'Cashback on grocery spend',
+            provider: 'TopCashback',
+            saving: '£60/yr',
+            body: () => 'Activate cashback on your regular supermarket to earn back automatically.',
+            link: 'https://www.topcashback.co.uk/supermarkets/',
+            linkText: 'Activate cashback →'
+        },
+        'FUEL': {
+            icon: '⛽',
+            title: 'Fuel cashback card available',
+            provider: 'Motoring Club via AA',
+            saving: '£80/yr',
+            body: () => 'A fuel cashback card could save you money on every fill-up.',
+            link: 'https://www.theaa.com/breakdown-cover/motoring-club/',
+            linkText: 'View offer →'
+        },
+        'DEBTS': {
+            icon: '💳',
+            title: '0% balance transfer found',
+            provider: 'Barclaycard via MoneySupermarket',
+            saving: 'Varies',
+            body: () => 'Transferring your balance to 0% could save you on interest charges.',
+            link: 'https://www.moneysupermarket.com/credit-cards/balance-transfer/',
+            linkText: 'Check eligibility →'
         }
     };
-    </script>
+
+    // Only show deals for categories the user actually has bills in
+    const matchedDeals = Object.entries(dealPool).filter(([cat]) => hasCategory(cat));
+
+    const container  = document.getElementById('deal-cards');
+    const badge      = document.getElementById('scan-badge');
+
+    // If no matching categories, show nothing extra
+    if (!container || matchedDeals.length === 0) {
+        if (badge) badge.innerHTML = '<span style="color:var(--green);font-size:11px;">✓ No better deals found</span>';
+        return;
+    }
+
+    // Stagger the deal cards in one by one to feel like a live scan
+    matchedDeals.forEach(([, deal], i) => {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'deal';
+            // Pass the user's company name to the body function for personalisation
+            const co = getCompany(cat);
+            el.innerHTML = `
+                <div class="deal-header">
+                    <span>${deal.icon}</span>
+                    <span class="deal-badge">Deal found</span>
+                    <span class="deal-title">${deal.title}</span>
+                </div>
+                <div class="deal-body">
+                    ${deal.body(co)}<br/>
+                    Potential saving: <span class="deal-saving">${deal.saving}</span>
+                    &nbsp;·&nbsp; ${deal.provider}
+                </div>
+                <a class="deal-link" href="${deal.link}" target="_blank">${deal.linkText}</a>
+            `;
+            container.appendChild(el);
+
+            // Update the scanning badge once all deals are shown
+            if (i === matchedDeals.length - 1) {
+                badge.innerHTML = `<span style="color:var(--green);font-size:11px;">✓ ${matchedDeals.length} deal${matchedDeals.length > 1 ? 's' : ''} found</span>`;
+            }
+        }, 800 + i * 600); // stagger by 600ms per deal
+    });
+
+})();
+</script>
+
 </body>
 </html>
