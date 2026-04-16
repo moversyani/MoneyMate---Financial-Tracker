@@ -259,7 +259,7 @@
 <header class="topbar">
     <a href="{% url 'dashboard' %}" class="topbar-brand">
         <!-- Inline SVG logo — no external files needed -->
-        <svg height="42" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <svg height="58" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
             <defs>
                 <linearGradient id="tblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
                 <linearGradient id="tgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
@@ -295,7 +295,7 @@
             {{ user.username }}
         </div>
         <!-- TODO: move to Django auth logout once login/signup pages are built -->
-        <a href="/admin/logout/" class="topbar-logout">Log out</a>
+        <a href="{% url 'logout' %}" class="topbar-logout">Log out</a>
     </div>
 </header>
 

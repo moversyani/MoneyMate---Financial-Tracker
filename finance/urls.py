@@ -1,9 +1,18 @@
+# finance/urls.py — URL routes for the finance app
+
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    # This empty string means the "Home" page
+    # Main dashboard — requires login
     path('', views.dashboard, name='dashboard'),
+
+    # Bill and income delete routes
     path('delete/<int:pk>/', views.delete_expense, name='delete_expense'),
     path('delete-income/<int:pk>/', views.delete_income, name='delete_income'),
+
+    # Auth routes
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('register/', views.register_view, name='register'),
 ]

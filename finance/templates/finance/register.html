@@ -1,0 +1,301 @@
+<!-- register.html — MoneyMate Sign Up Page -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>MoneyMate — Sign Up</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:      #10b981;
+            --green-dark: #059669;
+            --green-dim:  rgba(16,185,129,0.12);
+            --bg-page:    #0f1117;
+            --bg-card:    #1a1d27;
+            --bg-input:   #21253a;
+            --text-1:     #e8eaf0;
+            --text-2:     #8b92a8;
+            --text-3:     #555c72;
+            --border:     rgba(255,255,255,0.07);
+            --red:        #f87171;
+            --r:          12px;
+            --r-sm:       8px;
+            --pill:       100px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+
+        /* Subtle background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .auth-wrap {
+            width: 100%;
+            max-width: 460px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo a { text-decoration: none; }
+
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 32px;
+        }
+
+        .auth-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-1);
+            margin-bottom: 6px;
+        }
+
+        .auth-sub {
+            font-size: 14px;
+            color: var(--text-2);
+            margin-bottom: 28px;
+        }
+
+        /* Django messages */
+        .auth-messages { margin-bottom: 16px; }
+        .auth-msg-error {
+            background: rgba(248,113,113,0.1);
+            border: 1px solid rgba(248,113,113,0.3);
+            border-radius: var(--r-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--red);
+            margin-bottom: 8px;
+        }
+        .auth-msg-success {
+            background: var(--green-dim);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: var(--r-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--green);
+            margin-bottom: 8px;
+        }
+
+        /* Form fields */
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+        .field input {
+            width: 100%;
+            padding: 10px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            background: var(--bg-input);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: var(--r-sm);
+            color: var(--text-1);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .field input::placeholder { color: var(--text-3); }
+        .field input:focus { border-color: var(--green); }
+
+        /* Django renders password help text as <ul class="helptext"> */
+        .helptext {
+            font-size: 12px;
+            color: var(--text-3);
+            margin-top: 6px;
+            line-height: 1.5;
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Django form errors */
+        .errorlist { list-style: none; padding: 0; margin: 6px 0 0; }
+        .errorlist li { font-size: 12px; color: var(--red); }
+
+        /* Password strength hints box */
+        .password-hints {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            padding: 10px 14px;
+            margin-top: 8px;
+        }
+        .password-hints p {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-bottom: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .password-hints ul {
+            list-style: none;
+            padding: 0;
+        }
+        .password-hints ul li {
+            font-size: 12px;
+            color: var(--text-3);
+            padding: 2px 0;
+        }
+        .password-hints ul li::before {
+            content: '· ';
+            color: var(--text-3);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+            background: var(--green);
+            border: none;
+            border-radius: var(--pill);
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .btn-submit:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-2);
+        }
+        .auth-switch a { color: var(--green); text-decoration: none; font-weight: 500; }
+        .auth-switch a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="auth-wrap">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+        <a href="{% url 'login' %}">
+            <svg height="80" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="lblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                    <linearGradient id="lgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                    <linearGradient id="larrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+                </defs>
+                <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#lblue)"/>
+                <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#lblue)"/>
+                <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#lgreen)"/>
+                <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#lgreen)"/>
+                <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+                <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+                <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#larrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+                <polygon points="44,13 54,17 47,24" fill="url(#larrow)"/>
+                <text x="64" y="36" font-family="Arial Black,sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+                <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Register card -->
+    <div class="auth-card">
+        <div class="auth-title">Create your account</div>
+        <div class="auth-sub">Start tracking your finances for free</div>
+
+        {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                    <div class="auth-msg-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="field">
+                <label for="id_username">Username</label>
+                <input type="text"
+                       name="username"
+                       id="id_username"
+                       placeholder="Choose a username"
+                       autofocus />
+                {{ form.username.errors }}
+            </div>
+
+            <!-- Password 1 -->
+            <div class="field">
+                <label for="id_password1">Password</label>
+                <input type="password"
+                       name="password1"
+                       id="id_password1"
+                       placeholder="Create a password" />
+                {{ form.password1.errors }}
+                <!-- Password requirements box -->
+                <div class="password-hints">
+                    <p>Password must:</p>
+                    <ul>
+                        <li>Be at least 8 characters long</li>
+                        <li>Not be too similar to your username</li>
+                        <li>Not be a commonly used password</li>
+                        <li>Not be entirely numeric</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Password 2 (confirmation) -->
+            <div class="field">
+                <label for="id_password2">Confirm password</label>
+                <input type="password"
+                       name="password2"
+                       id="id_password2"
+                       placeholder="Repeat your password" />
+                {{ form.password2.errors }}
+            </div>
+
+            <button type="submit" class="btn-submit">Create account →</button>
+        </form>
+    </div>
+
+    <!-- Link back to login -->
+    <div class="auth-switch">
+        Already have an account? <a href="{% url 'login' %}">Log in</a>
+    </div>
+
+</div>
+
+</body>
+</html>
