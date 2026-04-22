@@ -23,9 +23,9 @@
             --bg-card:     #1a1d27;
             --bg-input:    #21253a;
             --bg-bar:      #13151f;
-            --text-1:      #e8eaf0;  /* primary text */
-            --text-2:      #8b92a8;  /* secondary / muted */
-            --text-3:      #555c72;  /* faint / placeholders */
+            --text-1:      #e8eaf0;
+            --text-2:      #8b92a8;
+            --text-3:      #555c72;
             --border:      rgba(255,255,255,0.07);
             --red:         #f87171;
             --red-dim:     rgba(248,113,113,0.12);
@@ -35,77 +35,36 @@
             --amber-bdr:   rgba(251,191,36,0.25);
             --sidebar-w:   220px;
             --topbar-h:    56px;
-            --r:           12px;   /* card radius */
-            --r-sm:        8px;    /* input radius */
-            --pill:        100px;  /* fully rounded */
+            --r:           12px;
+            --r-sm:        8px;
+            --pill:        100px;
         }
 
         /* --- Base --- */
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg-page);
-            color: var(--text-1);
-            min-height: 100vh;
-        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-page); color: var(--text-1); min-height: 100vh; }
 
         /* --- Topbar --- */
         .topbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-            height: var(--topbar-h);
-            background: var(--bg-bar);
+            height: var(--topbar-h); background: var(--bg-bar);
             border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
         }
-        .topbar-brand {
-            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
-            color: var(--text-1); text-decoration: none; display: flex; align-items: center; gap: 8px;
-        }
+        .topbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: var(--text-1); text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .topbar-right { display: flex; align-items: center; gap: 14px; }
-
-        /* Month badge */
-        .topbar-month {
-            font-size: 12px; color: var(--text-3);
-            background: var(--bg-input); padding: 4px 12px;
-            border-radius: var(--pill); border: 1px solid var(--border);
-        }
-        /* Username + avatar */
+        .topbar-month { font-size: 12px; color: var(--text-3); background: var(--bg-input); padding: 4px 12px; border-radius: var(--pill); border: 1px solid var(--border); }
         .topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
-        .topbar-avatar {
-            width: 30px; height: 30px; border-radius: 50%;
-            background: var(--green-dim); border: 1px solid var(--green);
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green);
-        }
-        /* Logout pill link */
-        .topbar-logout {
-            font-size: 12px; color: var(--text-3); text-decoration: none;
-            padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border);
-            transition: color 0.2s, border-color 0.2s;
-        }
+        .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green); }
+        .topbar-logout { font-size: 12px; color: var(--text-3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
         .topbar-logout:hover { color: var(--text-1); border-color: rgba(255,255,255,0.25); }
 
         /* --- Layout shell --- */
         .app-body { display: flex; padding-top: var(--topbar-h); min-height: 100vh; }
 
         /* --- Sidebar --- */
-        .sidebar {
-            width: var(--sidebar-w); flex-shrink: 0;
-            background: var(--bg-card); border-right: 1px solid var(--border);
-            padding: 20px 0; position: fixed;
-            top: var(--topbar-h); bottom: 0; left: 0;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
-        }
-        .sb-section {
-            padding: 16px 18px 5px; font-size: 10px; font-weight: 500;
-            letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
-        }
-        .sb-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 9px 18px; font-size: 13px; color: var(--text-2);
-            text-decoration: none; border-left: 2px solid transparent;
-            transition: background 0.15s, color 0.15s;
-        }
+        .sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; position: fixed; top: var(--topbar-h); bottom: 0; left: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+        .sb-section { padding: 16px 18px 5px; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+        .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 13px; color: var(--text-2); text-decoration: none; border-left: 2px solid transparent; transition: background 0.15s, color 0.15s; }
         .sb-item:hover { background: var(--bg-input); color: var(--text-1); }
         .sb-item.active { background: var(--green-dim); color: var(--green); border-left-color: var(--green); font-weight: 500; }
         .sb-icon { font-size: 14px; width: 18px; text-align: center; }
@@ -131,14 +90,8 @@
 
         /* --- Card --- */
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; }
-        .card-title {
-            font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
-            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-        }
-        .pill {
-            font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: var(--pill);
-            background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25);
-        }
+        .card-title { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: var(--pill); background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
 
         /* --- Chart --- */
         .chart-wrap { position: relative; height: 240px; width: 100%; }
@@ -188,12 +141,7 @@
         .item-name { font-weight: 500; color: var(--text-1); }
         .item-cat  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
         .item-amt  { font-weight: 500; flex-shrink: 0; }
-        /* Delete button — goes red on hover */
-        .btn-del {
-            font-size: 11px; color: var(--text-3); text-decoration: none;
-            padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0;
-            transition: color 0.2s, border-color 0.2s, background 0.2s;
-        }
+        .btn-del { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: color 0.2s, border-color 0.2s, background 0.2s; }
         .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
 
         .divider { height: 1px; background: var(--border); margin: 18px 0; }
@@ -205,39 +153,29 @@
         .api-info { flex: 1; }
         .api-name   { font-size: 13px; font-weight: 500; }
         .api-source { font-size: 11px; color: var(--text-3); }
-        .api-link {
-            font-size: 12px; color: var(--blue); font-weight: 500; text-decoration: none;
-            padding: 4px 10px; border-radius: var(--pill); border: 1px solid rgba(96,165,250,0.3);
-            white-space: nowrap; transition: background 0.2s;
-        }
+        .api-link { font-size: 12px; color: var(--blue); font-weight: 500; text-decoration: none; padding: 4px 10px; border-radius: var(--pill); border: 1px solid rgba(96,165,250,0.3); white-space: nowrap; transition: background 0.2s; }
         .api-link:hover { background: rgba(96,165,250,0.1); }
 
+        /* --- Advanced details toggle section inside bill form --- */
+        .adv-toggle { background: none; border: none; color: var(--text-3); font-size: 12px; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif; margin-bottom: 10px; }
+        .adv-toggle:hover { color: var(--text-2); }
+        .adv-body { display: none; padding: 14px; background: var(--bg-input); border-radius: var(--r-sm); border: 1px solid var(--border); margin-bottom: 12px; }
+        .adv-body .field { margin-bottom: 12px; }
+        .adv-body .field:last-child { margin-bottom: 0; }
+        .adv-body label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+        .adv-body input { width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s; }
+        .adv-body input:focus { border-color: var(--green); }
+        .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
         /* Pulse animation — used on the scanning dot and page loader */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.4; transform: scale(0.75); }
-        }
-        /* Page loader overlay — covers screen during navigation */
-        #page-loader {
-            position: fixed; inset: 0; z-index: 9999;
-            background: var(--bg-page);
-            display: flex; align-items: center; justify-content: center;
-            flex-direction: column; gap: 16px;
-            transition: opacity 0.3s;
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+        #page-loader { position: fixed; inset: 0; z-index: 9999; background: var(--bg-page); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; transition: opacity 0.3s; }
         #page-loader.hidden { opacity: 0; pointer-events: none; }
         .loader-logo { animation: pulse 1.2s ease-in-out infinite; }
         .loader-text { font-size: 13px; color: var(--text-3); font-family: 'DM Sans', sans-serif; }
 
         /* Deal card — green bordered tip shown when a deal is found */
-        .deal {
-            background: var(--green-dim);
-            border: 1px solid rgba(16,185,129,0.3);
-            border-radius: var(--r-sm);
-            padding: 13px 15px;
-            margin-bottom: 10px;
-            animation: fadeIn 0.4s ease both;
-        }
+        .deal { background: var(--green-dim); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--r-sm); padding: 13px 15px; margin-bottom: 10px; animation: fadeIn 0.4s ease both; }
         .deal:last-child { margin-bottom: 0; }
         .deal-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
         .deal-badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: var(--pill); background: var(--green); color: #0a0f0d; }
@@ -265,36 +203,24 @@
                 <linearGradient id="tgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
                 <linearGradient id="tarrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
             </defs>
-            <!-- Left figure head -->
             <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#tblue)"/>
-            <!-- Left figure body -->
             <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#tblue)"/>
-            <!-- Right figure head -->
             <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#tgreen)"/>
-            <!-- Right figure body -->
             <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#tgreen)"/>
-            <!-- Handshake -->
             <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
-            <!-- Dollar sign -->
             <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
-            <!-- M / arrow shape -->
             <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#tarrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
-            <!-- Arrow head -->
             <polygon points="44,13 54,17 47,24" fill="url(#tarrow)"/>
-            <!-- MONEY in dark navy -->
             <text x="64" y="36" font-family="'Arial Black',sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
-            <!-- Tagline -->
             <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
         </svg>
     </a>
     <div class="topbar-right">
         <span class="topbar-month">April 2026</span>
         <div class="topbar-user">
-            <!-- First letter of username shown as avatar -->
             <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
             {{ user.username }}
         </div>
-        <!-- TODO: move to Django auth logout once login/signup pages are built -->
         <a href="{% url 'logout' %}" class="topbar-logout">Log out</a>
     </div>
 </header>
@@ -309,13 +235,11 @@
         </a>
 
         <div class="sb-section">Finances</div>
-        <!-- These link to # until their views are built -->
         <a href="#" class="sb-item"><span class="sb-icon">💷</span> Income</a>
         <a href="#" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
         <a href="#" class="sb-item"><span class="sb-icon">🎯</span> Savings Goals</a>
 
         <div class="sb-section">Compare &amp; Save</div>
-        <!-- These link to # until the API pages are built -->
         <a href="#" class="sb-item"><span class="sb-icon">🚗</span> Car Insurance</a>
         <a href="#" class="sb-item"><span class="sb-icon">⚡</span> Energy</a>
         <a href="#" class="sb-item"><span class="sb-icon">📡</span> Broadband</a>
@@ -336,7 +260,6 @@
             <div class="metric">
                 <div class="metric-label">Total bills</div>
                 <div class="metric-val r">£{{ total_expenses }}</div>
-                <!-- pluralize adds "s" when count is 0 or >1 -->
                 <div class="metric-sub">{{ expenses|length }} active bill{{ expenses|length|pluralize }}</div>
             </div>
             <div class="metric">
@@ -368,7 +291,6 @@
                     <div class="chart-wrap">
                         <canvas id="spendingChart"></canvas>
                     </div>
-                    <!-- Summary figures below the chart -->
                     <div class="chart-summary">
                         <div><div class="cs-label">Total income</div><div class="cs-val g">£{{ total_income }}</div></div>
                         <div><div class="cs-label">Total bills</div><div class="cs-val r">£{{ total_expenses }}</div></div>
@@ -380,7 +302,6 @@
                 <div class="card">
                     <div class="card-title">
                         💡 MoneyMate Intelligence
-                        <!-- Animated scanning dot shown while JS deals are loading -->
                         <span id="scan-badge" style="font-size:11px;color:var(--text-3);font-family:'DM Sans',sans-serif;font-weight:400;display:flex;align-items:center;gap:5px;margin-left:auto;">
                             <span id="scan-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.2s ease-in-out infinite;"></span>
                             Scanning for deals...
@@ -394,7 +315,6 @@
                                 <div class="tip-title">{{ rec.category }}</div>
                                 <div class="tip-body">
                                     {% if rec.companies %}
-                                        <!-- Show which companies make up this category total -->
                                         With: <strong style="color:var(--amber);">{{ rec.companies|join:", " }}</strong><br/>
                                     {% endif %}
                                     Combined spend: £{{ rec.spent }}. Market average: £{{ rec.average }}.<br />
@@ -447,10 +367,8 @@
                     <form method="POST">
                         {% csrf_token %}
                         {{ income_form.as_p }}
-                        <!-- name="add_income" tells views.py which form was submitted -->
                         <button type="submit" name="add_income" class="btn btn-green">+ Add Income</button>
                     </form>
-                    <!-- Existing income records -->
                     <ul class="item-list">
                         {% for inc in incomes %}
                             <li>
@@ -470,31 +388,104 @@
                     <div class="card-title">Add a New Bill</div>
                     <form method="POST">
                         {% csrf_token %}
-                        {{ expense_form.as_p }}
+
+                        <!-- CATEGORY first — sets context before user fills other fields -->
+                        <p>
+                            <label for="id_category">Category:</label>
+                            {{ expense_form.category }}
+                        </p>
+
+                        <!-- Bill name -->
+                        <p>
+                            <label for="id_name">Name:</label>
+                            {{ expense_form.name }}
+                        </p>
+
+                        <!-- Company -->
+                        <p>
+                            <label for="id_company">Company:</label>
+                            {{ expense_form.company }}
+                        </p>
+
+                        <!-- Amount + Frequency side by side -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <p style="margin:0;">
+                                <label for="id_amount">Amount (£):</label>
+                                {{ expense_form.amount }}
+                            </p>
+                            <p style="margin:0;">
+                                <label for="id_frequency">Frequency:</label>
+                                {{ expense_form.frequency }}
+                            </p>
+                        </div>
+
+                        <!-- Advanced details — hidden by default, toggle reveals extra fields -->
+                        <div style="margin-top:14px; margin-bottom:12px;">
+                            <button type="button" class="adv-toggle" onclick="
+                                const body = this.nextElementSibling;
+                                body.style.display = body.style.display === 'block' ? 'none' : 'block';
+                                this.textContent = body.style.display === 'block' ? '− Hide advanced details' : '+ Advanced details';
+                            ">+ Advanced details</button>
+
+                            <!-- Hidden section: customer number, tariff, start/end dates -->
+                            <div class="adv-body">
+                                <div class="field">
+                                    <label for="id_customer_number">Customer / policy number:</label>
+                                    {{ expense_form.customer_number }}
+                                </div>
+                                <div class="field">
+                                    <label for="id_tariff_details">Tariff / policy details:</label>
+                                    {{ expense_form.tariff_details }}
+                                </div>
+                                <div class="adv-grid">
+                                    <div class="field">
+                                        <label for="id_start_date">Start date:</label>
+                                        {{ expense_form.start_date }}
+                                    </div>
+                                    <div class="field">
+                                        <label for="id_end_date">End date:</label>
+                                        {{ expense_form.end_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- name="add_expense" tells views.py which form was submitted -->
                         <button type="submit" name="add_expense" class="btn btn-blue">+ Save Bill</button>
                     </form>
+
                     <div class="divider"></div>
                     <div class="card-title" style="margin-bottom: 8px;">Recent Bills</div>
-                    <!-- Existing expense records -->
+
                     <ul class="item-list">
                         {% for expense in expenses %}
                             <li>
-                                <!-- hsl shifts 40° per item so each bill gets a unique colour -->
                                 <div class="dot" style="background: hsl({{ forloop.counter0 }}40, 70%, 60%);"></div>
                                 <div class="item-info">
                                     <div class="item-name">
                                         {{ expense.name }}
-                                        <!-- Company badge shown inline next to bill name if set -->
+                                        <!-- Company badge shown inline if set -->
                                         {% if expense.company %}
                                             <span style="font-size:10px;font-weight:500;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;vertical-align:middle;">
                                                 {{ expense.company }}
                                             </span>
                                         {% endif %}
                                     </div>
-                                    <div class="item-cat">{{ expense.get_category_display }}</div>
+                                    <div class="item-cat">
+                                        {{ expense.get_category_display }}
+                                        <!-- Annual badge shown if bill is paid yearly -->
+                                        {% if expense.frequency == 'ANNUALLY' %}
+                                            <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);margin-left:4px;">Annual</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <span class="item-amt">£{{ expense.amount }}</span>
+                                <!-- Show original amount + monthly equivalent for annual bills -->
+                                <div style="text-align:right; flex-shrink:0;">
+                                    <div class="item-amt">£{{ expense.amount }}</div>
+                                    {% if expense.frequency == 'ANNUALLY' %}
+                                        <div style="font-size:10px;color:var(--text-3);">£{{ expense.monthly_amount|floatformat:2 }}/mo</div>
+                                    {% endif %}
+                                </div>
                                 <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="return confirm('Delete this bill?')">×</a>
                             </li>
                         {% empty %}
@@ -520,12 +511,15 @@ window.onload = function () {
     // Hide the page loader overlay once everything has rendered
     const loader = document.getElementById('page-loader');
     if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); }
+
     const ctx = document.getElementById('spendingChart').getContext('2d');
 
     // Labels and data injected by Django template engine
     // Show bill name only — no category brackets under the chart
     const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
-    const data   = [{% for e in expenses %}{{ e.amount }},{% endfor %}];
+
+    // Use monthly_amount for chart so annual bills display their monthly equivalent
+    const data = [{% for e in expenses %}{{ e.monthly_amount|floatformat:2 }},{% endfor %}];
 
     // Evenly spaced hsl colours — one per slice
     const colors = data.map((_, i) => `hsl(${i * (360 / (data.length || 1))}, 65%, 58%)`);
@@ -548,7 +542,6 @@ window.onload = function () {
             }
         });
     } else {
-        // Fallback when no expenses exist
         ctx.font = "14px 'DM Sans'"; ctx.fillStyle = '#555c72'; ctx.textAlign = 'center';
         ctx.fillText('No bills added yet.', ctx.canvas.width / 2, ctx.canvas.height / 2);
     }
@@ -585,122 +578,86 @@ window.onload = function () {
      Simulates an active background scan for cheaper deals.
      In production this would call real comparison APIs.
      Deals are matched against the user's actual expense categories
-     injected by Django into the `userCategories` array. -->
+     injected by Django into the userBills array. -->
 <script>
 (function () {
 
-    // Django injects the user's actual bill data as an array of objects
-    // Each object has category, company name, and amount
+    // Django injects the user's actual bill data at render time
     const userBills = [
         {% for e in expenses %}
-        { category: "{{ e.category }}", company: "{{ e.company|default:'' }}", name: "{{ e.name }}", amount: {{ e.amount }} },
+        { category: "{{ e.category }}", company: "{{ e.company|default:'' }}", name: "{{ e.name }}", amount: {{ e.monthly_amount|floatformat:2 }} },
         {% endfor %}
     ];
 
     // Helper: check if user has a bill in a given category
     const hasCategory = (cat) => userBills.some(b => b.category === cat);
 
-    // Helper: get the company name for a category (used to personalise the deal body)
+    // Helper: get the company name for a category to personalise deal text
     const getCompany = (cat) => {
         const bill = userBills.find(b => b.category === cat);
         return bill && bill.company ? bill.company : null;
     };
 
     // Simulated deal database — only shown if the user has that category
-    // In production, replace each entry with a live API response
     const dealPool = {
         'INSURANCE': {
-            icon: '🚗',
-            title: 'Cheaper insurance found',
-            provider: 'Admiral via MoneySupermarket',
-            saving: '£312/yr',
+            icon: '🚗', title: 'Cheaper insurance found', provider: 'Admiral via MoneySupermarket', saving: '£312/yr',
             body: (co) => `You currently pay ${co ? `with <strong>${co}</strong>` : 'for insurance'}. A cheaper policy is available right now.`,
-            link: 'https://www.moneysupermarket.com/car-insurance/',
-            linkText: 'View deal →'
+            link: 'https://www.moneysupermarket.com/car-insurance/', linkText: 'View deal →'
         },
         'UTILITIES': {
-            icon: '⚡',
-            title: 'Better energy tariff available',
-            provider: 'Octopus Energy via Ofgem data',
-            saving: '£180/yr',
+            icon: '⚡', title: 'Better energy tariff available', provider: 'Octopus Energy via Ofgem data', saving: '£180/yr',
             body: (co) => `Your ${co ? `<strong>${co}</strong> ` : ''}energy spend is above the Ofgem price cap benchmark.`,
-            link: 'https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you',
-            linkText: 'Check tariffs →'
+            link: 'https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you', linkText: 'Check tariffs →'
         },
         'MOBILE': {
-            icon: '📱',
-            title: 'Cheaper mobile plan found',
-            provider: 'iD Mobile via Uswitch',
-            saving: '£96/yr',
+            icon: '📱', title: 'Cheaper mobile plan found', provider: 'iD Mobile via Uswitch', saving: '£96/yr',
             body: (co) => `A SIM-only deal is cheaper than your ${co ? `<strong>${co}</strong> ` : ''}plan.`,
-            link: 'https://www.uswitch.com/mobiles/',
-            linkText: 'View deal →'
+            link: 'https://www.uswitch.com/mobiles/', linkText: 'View deal →'
         },
         'MORTGAGE': {
-            icon: '🏠',
-            title: 'Remortgage deal available',
-            provider: 'HSBC via MoneySupermarket',
-            saving: '£600/yr',
+            icon: '🏠', title: 'Remortgage deal available', provider: 'HSBC via MoneySupermarket', saving: '£600/yr',
             body: () => 'Current fixed-rate deals are lower than your existing rate.',
-            link: 'https://www.moneysupermarket.com/mortgages/',
-            linkText: 'Compare rates →'
+            link: 'https://www.moneysupermarket.com/mortgages/', linkText: 'Compare rates →'
         },
         'LOANS': {
-            icon: '🚙',
-            title: 'Lower car finance rate found',
-            provider: 'Zuto via Compare the Market',
-            saving: '£240/yr',
+            icon: '🚙', title: 'Lower car finance rate found', provider: 'Zuto via Compare the Market', saving: '£240/yr',
             body: (co) => `Refinancing your ${co ? `<strong>${co}</strong> ` : ''}agreement could reduce your monthly payment.`,
-            link: 'https://www.comparethemarket.com/car-finance/',
-            linkText: 'Check eligibility →'
+            link: 'https://www.comparethemarket.com/car-finance/', linkText: 'Check eligibility →'
         },
         'GROCERIES': {
-            icon: '🛒',
-            title: 'Cashback on grocery spend',
-            provider: 'TopCashback',
-            saving: '£60/yr',
+            icon: '🛒', title: 'Cashback on grocery spend', provider: 'TopCashback', saving: '£60/yr',
             body: () => 'Activate cashback on your regular supermarket to earn back automatically.',
-            link: 'https://www.topcashback.co.uk/supermarkets/',
-            linkText: 'Activate cashback →'
+            link: 'https://www.topcashback.co.uk/supermarkets/', linkText: 'Activate cashback →'
         },
         'FUEL': {
-            icon: '⛽',
-            title: 'Fuel cashback card available',
-            provider: 'Motoring Club via AA',
-            saving: '£80/yr',
+            icon: '⛽', title: 'Fuel cashback card available', provider: 'Motoring Club via AA', saving: '£80/yr',
             body: () => 'A fuel cashback card could save you money on every fill-up.',
-            link: 'https://www.theaa.com/breakdown-cover/motoring-club/',
-            linkText: 'View offer →'
+            link: 'https://www.theaa.com/breakdown-cover/motoring-club/', linkText: 'View offer →'
         },
         'DEBTS': {
-            icon: '💳',
-            title: '0% balance transfer found',
-            provider: 'Barclaycard via MoneySupermarket',
-            saving: 'Varies',
+            icon: '💳', title: '0% balance transfer found', provider: 'Barclaycard via MoneySupermarket', saving: 'Varies',
             body: () => 'Transferring your balance to 0% could save you on interest charges.',
-            link: 'https://www.moneysupermarket.com/credit-cards/balance-transfer/',
-            linkText: 'Check eligibility →'
+            link: 'https://www.moneysupermarket.com/credit-cards/balance-transfer/', linkText: 'Check eligibility →'
         }
     };
 
     // Only show deals for categories the user actually has bills in
     const matchedDeals = Object.entries(dealPool).filter(([cat]) => hasCategory(cat));
 
-    const container  = document.getElementById('deal-cards');
-    const badge      = document.getElementById('scan-badge');
+    const container = document.getElementById('deal-cards');
+    const badge     = document.getElementById('scan-badge');
 
-    // If no matching categories, show nothing extra
     if (!container || matchedDeals.length === 0) {
         if (badge) badge.innerHTML = '<span style="color:var(--green);font-size:11px;">✓ No better deals found</span>';
         return;
     }
 
-    // Stagger the deal cards in one by one to feel like a live scan
-    matchedDeals.forEach(([, deal], i) => {
+    // Stagger deal cards in one by one to feel like a live scan
+    matchedDeals.forEach(([cat, deal], i) => {
         setTimeout(() => {
             const el = document.createElement('div');
             el.className = 'deal';
-            // Pass the user's company name to the body function for personalisation
             const co = getCompany(cat);
             el.innerHTML = `
                 <div class="deal-header">
@@ -717,7 +674,7 @@ window.onload = function () {
             `;
             container.appendChild(el);
 
-            // Update the scanning badge once all deals are shown
+            // Update badge once all deals are shown
             if (i === matchedDeals.length - 1) {
                 badge.innerHTML = `<span style="color:var(--green);font-size:11px;">✓ ${matchedDeals.length} deal${matchedDeals.length > 1 ? 's' : ''} found</span>`;
             }

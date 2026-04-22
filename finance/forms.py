@@ -7,22 +7,49 @@ from .models import Expense, Income
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model  = Expense
-        # company is now included so users can log who their bill is with
-        fields = ['name', 'company', 'amount', 'category']
+        # Category is first so it sets context before the user fills anything else
+        fields = [
+            'category', 'name', 'company', 'amount', 'frequency',
+            'customer_number', 'tariff_details', 'start_date', 'end_date',
+        ]
         widgets = {
-            'name':     forms.TextInput(attrs={
+            'category': forms.Select(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g. Car Insurance'
+                'id': 'id_category',
             }),
-            'company':  forms.TextInput(attrs={
+            'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g. Admiral, Vodafone, Severn Trent'
+                'placeholder': 'e.g. Car Insurance',
             }),
-            'amount':   forms.NumberInput(attrs={
+            'company': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': '0.00'
+                'placeholder': 'e.g. Admiral, Vodafone, Severn Trent',
             }),
-            'category': forms.Select(attrs={'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'step': '0.01',
+            }),
+            'frequency': forms.Select(attrs={
+                'class': 'form-control',
+            }),
+            # Advanced fields — rendered separately in the template
+            'customer_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. 123456789',
+            }),
+            'tariff_details': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. Standard Variable, Gold Policy',
+            }),
+            'start_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            }),
+            'end_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            }),
         }
 
 
@@ -33,10 +60,11 @@ class IncomeForm(forms.ModelForm):
         widgets = {
             'source': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g. Monthly Salary'
+                'placeholder': 'e.g. Monthly Salary',
             }),
             'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': '0.00'
+                'placeholder': '0.00',
+                'step': '0.01',
             }),
         }

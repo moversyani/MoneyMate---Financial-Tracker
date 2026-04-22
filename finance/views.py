@@ -1,51 +1,49 @@
 # views.py — MoneyMate views
+# Controls what each URL renders and what logic runs when forms are submitted
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from decimal import Decimal
+from decimal import Decimal  # used for precise money arithmetic — avoids float rounding errors
 from .models import Income, Expense
 from .forms import ExpenseForm, IncomeForm
 
 
-# --- Dashboard view ---
-# @login_required redirects to /login/ if the user is not authenticated
+# --- Dashboard ---
+# @login_required redirects unauthenticated users to /login/ automatically
 @login_required
 def dashboard(request):
 
-    # Handle form submissions
     if request.method == 'POST':
 
         if 'add_expense' in request.POST:
             form = ExpenseForm(request.POST)
             if form.is_valid():
-                # Save the bill but assign the current user before committing
-                expense = form.save(commit=False)
-                expense.user = request.user
+                expense = form.save(commit=False)  # create object without saving yet
+                expense.user = request.user        # attach the logged-in user before saving
                 expense.save()
                 return redirect('dashboard')
 
         elif 'add_income' in request.POST:
             form = IncomeForm(request.POST)
             if form.is_valid():
-                # Save the income but assign the current user before committing
                 income = form.save(commit=False)
                 income.user = request.user
                 income.save()
                 return redirect('dashboard')
 
-    # Filter all queries by the logged-in user so users only see their own data
+    # filter(user=request.user) ensures users only see their own records
     incomes  = Income.objects.filter(user=request.user)
     expenses = Expense.objects.filter(user=request.user)
 
-    # Calculate totals from the user's own records only
     total_income   = sum(i.amount for i in incomes)
-    total_expenses = sum(e.amount for e in expenses)
+    # monthly_amount() normalises annual bills to monthly before totalling
+    total_expenses = sum(e.monthly_amount() for e in expenses)
     leftover       = total_income - total_expenses
 
-    # Savings intelligence benchmarks (monthly averages)
+    # UK market average benchmarks — used to flag overspending per category
     benchmarks = {
         'UTILITIES':     Decimal('150.00'),
         'SUBSCRIPTIONS': Decimal('40.00'),
@@ -60,33 +58,34 @@ def dashboard(request):
 
     recommendations = []
 
-    # Sum all bills per category — one tip per category, no duplicates
     for cat_code, cat_name in Expense.CATEGORY_CHOICES:
         if cat_code not in benchmarks:
             continue
 
         cat_expenses = [e for e in expenses if e.category == cat_code]
-        cat_total    = sum(e.amount for e in cat_expenses)
+        cat_total    = sum(e.monthly_amount() for e in cat_expenses)
 
         if cat_total == 0:
             continue
 
         if cat_total > benchmarks[cat_code]:
             savings   = cat_total - benchmarks[cat_code]
+            # collect company names from all bills in this category for the tip card
             companies = [e.company for e in cat_expenses if e.company]
 
             recommendations.append({
                 'category':         cat_name,
-                'spent':            cat_total,
+                'spent':            round(cat_total, 2),
                 'average':          benchmarks[cat_code],
-                'potential_saving': savings,
+                'potential_saving': round(savings, 2),
                 'companies':        companies,
             })
 
+    # context dict passes all data to dashboard.html — every {{ variable }} maps to a key here
     context = {
         'total_income':    total_income,
-        'total_expenses':  total_expenses,
-        'leftover':        leftover,
+        'total_expenses':  round(total_expenses, 2),
+        'leftover':        round(leftover, 2),
         'expenses':        expenses,
         'incomes':         incomes,
         'expense_form':    ExpenseForm(),
@@ -98,9 +97,9 @@ def dashboard(request):
 
 
 # --- Delete expense ---
+# get_object_or_404 with user=request.user prevents users deleting each other's bills
 @login_required
 def delete_expense(request, pk):
-    # get_object_or_404 also checks the record belongs to the current user
     expense = get_object_or_404(Expense, pk=pk, user=request.user)
     expense.delete()
     return redirect('dashboard')
@@ -114,22 +113,20 @@ def delete_income(request, pk):
     return redirect('dashboard')
 
 
-# --- Register view ---
+# --- Register ---
+# Uses Django's built-in UserCreationForm — handles validation automatically
 def register_view(request):
-    # Redirect already logged-in users straight to the dashboard
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('dashboard')  # skip signup if already logged in
 
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Log the user in immediately after registering
-            login(request, user)
+            login(request, user)  # log the user in immediately after registering
             messages.success(request, f'Welcome to MoneyMate, {user.username}!')
             return redirect('dashboard')
         else:
-            # Show form errors back to the user
             messages.error(request, 'Please fix the errors below.')
     else:
         form = UserCreationForm()
@@ -137,9 +134,8 @@ def register_view(request):
     return render(request, 'finance/register.html', {'form': form})
 
 
-# --- Login view ---
+# --- Login ---
 def login_view(request):
-    # Redirect already logged-in users straight to the dashboard
     if request.user.is_authenticated:
         return redirect('dashboard')
 
@@ -148,7 +144,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            # If user was redirected to login from another page, send them back there
+            # if user was redirected here from another page, send them back after login
             next_url = request.GET.get('next', 'dashboard')
             return redirect(next_url)
         else:
@@ -159,8 +155,8 @@ def login_view(request):
     return render(request, 'finance/login.html', {'form': form})
 
 
-# --- Logout view ---
+# --- Logout ---
 @login_required
 def logout_view(request):
-    logout(request)
+    logout(request)          # clears the user's session
     return redirect('login')
