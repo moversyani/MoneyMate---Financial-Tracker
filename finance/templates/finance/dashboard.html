@@ -132,17 +132,47 @@
         .btn-green { background: var(--green); }
         .btn-blue  { background: #3b82f6; }
 
-        /* --- List items (income + bills) --- */
+        /* --- Bill list items --- */
         .item-list { list-style: none; padding: 0; margin-top: 14px; }
-        .item-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+        /* Each li is a wrapper for the clickable row + the expandable details panel */
+        .item-list li { border-bottom: 1px solid var(--border); }
         .item-list li:last-child { border-bottom: none; }
+
+        /* The visible row — flex layout with dot, info, amount, delete */
+        .bill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px; cursor: pointer; }
+        .bill-row:hover .item-name { color: var(--green); }
+
+        /* Chevron icon showing open/closed state of the expand panel */
+        .bill-chevron { font-size: 10px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
+        .bill-chevron.open { transform: rotate(180deg); }
+
+        /* Expandable details panel — hidden by default, shown on click */
+        .bill-details {
+            display: none;
+            padding: 10px 12px 14px 24px;
+            background: var(--bg-input);
+            border-radius: var(--r-sm);
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: var(--text-2);
+        }
+        .bill-details.open { display: block; }
+        .bill-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+        .bd-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .bd-value { font-size: 12px; color: var(--text-1); }
+
         .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .item-info { flex: 1; }
-        .item-name { font-weight: 500; color: var(--text-1); }
+        .item-name { font-weight: 500; color: var(--text-1); transition: color 0.15s; }
         .item-cat  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
         .item-amt  { font-weight: 500; flex-shrink: 0; }
         .btn-del { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: color 0.2s, border-color 0.2s, background 0.2s; }
         .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+
+        /* Income list items — no expand needed, simpler style */
+        .income-list { list-style: none; padding: 0; margin-top: 14px; }
+        .income-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .income-list li:last-child { border-bottom: none; }
 
         .divider { height: 1px; background: var(--border); margin: 18px 0; }
 
@@ -369,7 +399,7 @@
                         {{ income_form.as_p }}
                         <button type="submit" name="add_income" class="btn btn-green">+ Add Income</button>
                     </form>
-                    <ul class="item-list">
+                    <ul class="income-list">
                         {% for inc in incomes %}
                             <li>
                                 <div class="dot" style="background: var(--green);"></div>
@@ -408,7 +438,7 @@
                         </p>
 
                         <!-- Amount + Frequency side by side -->
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
                             <p style="margin:0;">
                                 <label for="id_amount">Amount (£):</label>
                                 {{ expense_form.amount }}
@@ -419,8 +449,14 @@
                             </p>
                         </div>
 
+                        <!-- Bill type: Fixed or Variable -->
+                        <p>
+                            <label for="id_bill_type">Bill type:</label>
+                            {{ expense_form.bill_type }}
+                        </p>
+
                         <!-- Advanced details — hidden by default, toggle reveals extra fields -->
-                        <div style="margin-top:14px; margin-bottom:12px;">
+                        <div style="margin-top:4px; margin-bottom:12px;">
                             <button type="button" class="adv-toggle" onclick="
                                 const body = this.nextElementSibling;
                                 body.style.display = body.style.display === 'block' ? 'none' : 'block';
@@ -457,39 +493,93 @@
                     <div class="divider"></div>
                     <div class="card-title" style="margin-bottom: 8px;">Recent Bills</div>
 
+                    <!-- Bill list — each row is clickable and expands to show advanced details -->
                     <ul class="item-list">
                         {% for expense in expenses %}
                             <li>
-                                <div class="dot" style="background: hsl({{ forloop.counter0 }}40, 70%, 60%);"></div>
-                                <div class="item-info">
-                                    <div class="item-name">
-                                        {{ expense.name }}
-                                        <!-- Company badge shown inline if set -->
-                                        {% if expense.company %}
-                                            <span style="font-size:10px;font-weight:500;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;vertical-align:middle;">
-                                                {{ expense.company }}
-                                            </span>
-                                        {% endif %}
+                                <!-- Clickable row — toggles the details panel below -->
+                                <div class="bill-row" onclick="
+                                    const details = this.nextElementSibling;
+                                    const chevron = this.querySelector('.bill-chevron');
+                                    details.classList.toggle('open');
+                                    chevron.classList.toggle('open');
+                                ">
+                                    <div class="dot" style="background: hsl({{ forloop.counter0 }}40, 70%, 60%);"></div>
+                                    <div class="item-info">
+                                        <div class="item-name">
+                                            {{ expense.name }}
+                                            <!-- Company badge shown inline if set -->
+                                            {% if expense.company %}
+                                                <span style="font-size:10px;font-weight:500;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;vertical-align:middle;">
+                                                    {{ expense.company }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="item-cat">
+                                            {{ expense.get_category_display }}
+                                            <!-- Annual badge shown if bill is paid yearly -->
+                                            {% if expense.frequency == 'ANNUALLY' %}
+                                                <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);margin-left:4px;">Annual</span>
+                                            {% endif %}
+                                            <!-- Variable badge shown if bill type is variable -->
+                                            {% if expense.bill_type == 'VARIABLE' %}
+                                                <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid rgba(251,191,36,0.25);margin-left:4px;">Variable</span>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                    <div class="item-cat">
-                                        {{ expense.get_category_display }}
-                                        <!-- Annual badge shown if bill is paid yearly -->
+                                    <!-- Show original amount + monthly equivalent for annual bills -->
+                                    <div style="text-align:right; flex-shrink:0;">
+                                        <div class="item-amt">£{{ expense.amount }}</div>
                                         {% if expense.frequency == 'ANNUALLY' %}
-                                            <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);margin-left:4px;">Annual</span>
+                                            <div style="font-size:10px;color:var(--text-3);">£{{ expense.monthly_amount|floatformat:2 }}/mo</div>
+                                        {% endif %}
+                                    </div>
+                                    <!-- Chevron rotates when row is expanded -->
+                                    <span class="bill-chevron">▼</span>
+                                    <!-- Delete stops click from bubbling up to the expand toggle -->
+                                    <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="event.stopPropagation(); return confirm('Delete this bill?')">×</a>
+                                </div>
+
+                                <!-- Expandable details panel — hidden until row is clicked -->
+                                <div class="bill-details">
+                                    <div class="bill-details-grid">
+                                        <div>
+                                            <div class="bd-label">Bill type</div>
+                                            <div class="bd-value">{{ expense.get_bill_type_display }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="bd-label">Frequency</div>
+                                            <div class="bd-value">{{ expense.get_frequency_display }}</div>
+                                        </div>
+                                        {% if expense.customer_number %}
+                                        <div>
+                                            <div class="bd-label">Customer / policy no.</div>
+                                            <div class="bd-value">{{ expense.customer_number }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if expense.tariff_details %}
+                                        <div>
+                                            <div class="bd-label">Tariff / policy</div>
+                                            <div class="bd-value">{{ expense.tariff_details }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if expense.start_date %}
+                                        <div>
+                                            <div class="bd-label">Start date</div>
+                                            <div class="bd-value">{{ expense.start_date }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if expense.end_date %}
+                                        <div>
+                                            <div class="bd-label">End date</div>
+                                            <div class="bd-value">{{ expense.end_date }}</div>
+                                        </div>
                                         {% endif %}
                                     </div>
                                 </div>
-                                <!-- Show original amount + monthly equivalent for annual bills -->
-                                <div style="text-align:right; flex-shrink:0;">
-                                    <div class="item-amt">£{{ expense.amount }}</div>
-                                    {% if expense.frequency == 'ANNUALLY' %}
-                                        <div style="font-size:10px;color:var(--text-3);">£{{ expense.monthly_amount|floatformat:2 }}/mo</div>
-                                    {% endif %}
-                                </div>
-                                <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="return confirm('Delete this bill?')">×</a>
                             </li>
                         {% empty %}
-                            <li style="color: var(--text-3); font-size: 13px;">No bills added yet.</li>
+                            <li style="color: var(--text-3); font-size: 13px; padding: 10px 0;">No bills added yet.</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -514,14 +604,13 @@ window.onload = function () {
 
     const ctx = document.getElementById('spendingChart').getContext('2d');
 
-    // Labels and data injected by Django template engine
-    // Show bill name only — no category brackets under the chart
+    // Labels and data injected by Django — show bill name only under the chart
     const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
 
-    // Use monthly_amount for chart so annual bills display their monthly equivalent
+    // Use monthly_amount so annual bills display their monthly equivalent in the chart
     const data = [{% for e in expenses %}{{ e.monthly_amount|floatformat:2 }},{% endfor %}];
 
-    // Evenly spaced hsl colours — one per slice
+    // Evenly spaced hsl colours — one unique colour per slice
     const colors = data.map((_, i) => `hsl(${i * (360 / (data.length || 1))}, 65%, 58%)`);
 
     if (data.length > 0) {
