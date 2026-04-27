@@ -1,6 +1,6 @@
 <!-- dashboard.html — MoneyMate Dashboard (Dark Theme)
      Context from views.py: total_income, total_expenses, leftover,
-     incomes, expenses, recommendations, income_form, expense_form -->
+     incomes, expenses, recommendations, income_form, expense_form, goals -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -134,28 +134,20 @@
 
         /* --- Bill list items --- */
         .item-list { list-style: none; padding: 0; margin-top: 14px; }
-        /* Each li is a wrapper for the clickable row + the expandable details panel */
+        /* Each li wraps the clickable row + expandable details panel */
         .item-list li { border-bottom: 1px solid var(--border); }
         .item-list li:last-child { border-bottom: none; }
 
-        /* The visible row — flex layout with dot, info, amount, delete */
+        /* Clickable bill row */
         .bill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px; cursor: pointer; }
         .bill-row:hover .item-name { color: var(--green); }
 
-        /* Chevron icon showing open/closed state of the expand panel */
+        /* Chevron rotates when row is expanded */
         .bill-chevron { font-size: 10px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
         .bill-chevron.open { transform: rotate(180deg); }
 
-        /* Expandable details panel — hidden by default, shown on click */
-        .bill-details {
-            display: none;
-            padding: 10px 12px 14px 24px;
-            background: var(--bg-input);
-            border-radius: var(--r-sm);
-            margin-bottom: 10px;
-            font-size: 12px;
-            color: var(--text-2);
-        }
+        /* Expandable details panel — hidden by default */
+        .bill-details { display: none; padding: 10px 12px 14px 24px; background: var(--bg-input); border-radius: var(--r-sm); margin-bottom: 10px; font-size: 12px; color: var(--text-2); }
         .bill-details.open { display: block; }
         .bill-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
         .bd-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
@@ -169,7 +161,7 @@
         .btn-del { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: color 0.2s, border-color 0.2s, background 0.2s; }
         .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
 
-        /* Income list items — no expand needed, simpler style */
+        /* Income list — simpler, no expand needed */
         .income-list { list-style: none; padding: 0; margin-top: 14px; }
         .income-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
         .income-list li:last-child { border-bottom: none; }
@@ -186,7 +178,7 @@
         .api-link { font-size: 12px; color: var(--blue); font-weight: 500; text-decoration: none; padding: 4px 10px; border-radius: var(--pill); border: 1px solid rgba(96,165,250,0.3); white-space: nowrap; transition: background 0.2s; }
         .api-link:hover { background: rgba(96,165,250,0.1); }
 
-        /* --- Advanced details toggle section inside bill form --- */
+        /* --- Advanced details toggle inside bill form --- */
         .adv-toggle { background: none; border: none; color: var(--text-3); font-size: 12px; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif; margin-bottom: 10px; }
         .adv-toggle:hover { color: var(--text-2); }
         .adv-body { display: none; padding: 14px; background: var(--bg-input); border-radius: var(--r-sm); border: 1px solid var(--border); margin-bottom: 12px; }
@@ -196,6 +188,10 @@
         .adv-body input { width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s; }
         .adv-body input:focus { border-color: var(--green); }
         .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* --- Savings goal progress bars (used in dashboard summary card) --- */
+        .goal-bar-track { width: 100%; height: 5px; background: var(--bg-input); border-radius: 3px; overflow: hidden; margin: 6px 0 4px; }
+        .goal-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s ease; }
 
         /* Pulse animation — used on the scanning dot and page loader */
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
@@ -267,7 +263,10 @@
         <div class="sb-section">Finances</div>
         <a href="#" class="sb-item"><span class="sb-icon">💷</span> Income</a>
         <a href="#" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
-        <a href="#" class="sb-item"><span class="sb-icon">🎯</span> Savings Goals</a>
+        <!-- Savings Goals now links to the dedicated /savings/ page -->
+        <a href="{% url 'savings_goals' %}" class="sb-item">
+            <span class="sb-icon">🎯</span> Savings Goals
+        </a>
 
         <div class="sb-section">Compare &amp; Save</div>
         <a href="#" class="sb-item"><span class="sb-icon">🚗</span> Car Insurance</a>
@@ -326,6 +325,43 @@
                         <div><div class="cs-label">Total bills</div><div class="cs-val r">£{{ total_expenses }}</div></div>
                         <div><div class="cs-label">Disposable</div><div class="cs-val">£{{ leftover }}</div></div>
                     </div>
+                </div>
+
+                <!-- Savings Goals summary card — shows progress bars for each goal -->
+                <div class="card">
+                    <div class="card-title">
+                        🎯 Savings Goals
+                        <!-- Link to the full savings page -->
+                        <a href="{% url 'savings_goals' %}" style="margin-left:auto;font-size:11px;color:var(--blue);text-decoration:none;">View all →</a>
+                    </div>
+                    {% if goals %}
+                        {% for goal in goals %}
+                            <div style="margin-bottom:14px;">
+                                <!-- Goal name + percentage -->
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                                    <span style="font-size:13px;font-weight:500;">{{ goal.name }}</span>
+                                    <span style="font-size:11px;color:var(--text-3);">{{ goal.progress_percent }}%</span>
+                                </div>
+                                <!-- Progress bar — width driven by goal.progress_percent from the model -->
+                                <div class="goal-bar-track">
+                                    <div class="goal-bar-fill" style="width:{{ goal.progress_percent }}%;"></div>
+                                </div>
+                                <!-- Saved so far + months remaining -->
+                                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);">
+                                    <span>£{{ goal.current_amount }} of £{{ goal.target_amount }}</span>
+                                    {% if goal.months_remaining %}
+                                        <span>~{{ goal.months_remaining }} month{{ goal.months_remaining|pluralize }} left</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Shown when user has no goals yet -->
+                        <p style="font-size:13px;color:var(--text-3);">
+                            No goals yet.
+                            <a href="{% url 'savings_goals' %}" style="color:var(--green);">Add your first →</a>
+                        </p>
+                    {% endif %}
                 </div>
 
                 <!-- Intelligence card: Django tips + JS-powered simulated deal scanner -->
@@ -536,7 +572,7 @@
                                     </div>
                                     <!-- Chevron rotates when row is expanded -->
                                     <span class="bill-chevron">▼</span>
-                                    <!-- Delete stops click from bubbling up to the expand toggle -->
+                                    <!-- event.stopPropagation() stops delete click from triggering the expand -->
                                     <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="event.stopPropagation(); return confirm('Delete this bill?')">×</a>
                                 </div>
 

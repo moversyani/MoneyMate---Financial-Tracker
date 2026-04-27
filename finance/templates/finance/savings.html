@@ -1,0 +1,327 @@
+<!-- savings.html — MoneyMate Savings Goals Page
+     Context from views.py: goals, form, leftover, suggested_contribution -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>MoneyMate — Savings Goals</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        /* --- Reset & tokens (matches dashboard) --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:      #10b981;
+            --green-dark: #059669;
+            --green-dim:  rgba(16,185,129,0.12);
+            --bg-page:    #0f1117;
+            --bg-card:    #1a1d27;
+            --bg-input:   #21253a;
+            --bg-bar:     #13151f;
+            --text-1:     #e8eaf0;
+            --text-2:     #8b92a8;
+            --text-3:     #555c72;
+            --border:     rgba(255,255,255,0.07);
+            --red:        #f87171;
+            --red-dim:    rgba(248,113,113,0.12);
+            --blue:       #60a5fa;
+            --amber:      #fbbf24;
+            --sidebar-w:  220px;
+            --topbar-h:   56px;
+            --r:          12px;
+            --r-sm:       8px;
+            --pill:       100px;
+        }
+
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-page); color: var(--text-1); min-height: 100vh; }
+
+        /* --- Topbar --- */
+        .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 300; height: var(--topbar-h); background: var(--bg-bar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+        .topbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: var(--text-1); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .topbar-month { font-size: 12px; color: var(--text-3); background: var(--bg-input); padding: 4px 12px; border-radius: var(--pill); border: 1px solid var(--border); }
+        .topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+        .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green); }
+        .topbar-logout { font-size: 12px; color: var(--text-3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
+        .topbar-logout:hover { color: var(--text-1); border-color: rgba(255,255,255,0.25); }
+
+        /* --- Layout --- */
+        .app-body { display: flex; padding-top: var(--topbar-h); min-height: 100vh; }
+
+        /* --- Sidebar --- */
+        .sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; position: fixed; top: var(--topbar-h); bottom: 0; left: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+        .sb-section { padding: 16px 18px 5px; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+        .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 13px; color: var(--text-2); text-decoration: none; border-left: 2px solid transparent; transition: background 0.15s, color 0.15s; }
+        .sb-item:hover { background: var(--bg-input); color: var(--text-1); }
+        .sb-item.active { background: var(--green-dim); color: var(--green); border-left-color: var(--green); font-weight: 500; }
+        .sb-icon { font-size: 14px; width: 18px; text-align: center; }
+
+        /* --- Main --- */
+        .main { margin-left: var(--sidebar-w); flex: 1; padding: 24px; max-width: 1000px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        .page-sub { font-size: 13px; color: var(--text-3); margin-bottom: 24px; }
+
+        /* --- Cards --- */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; margin-bottom: 16px; }
+        .card-title { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+        /* --- Two col layout for form + goals list --- */
+        .goals-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 16px; align-items: start; }
+
+        /* --- Forms --- */
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+        .field input {
+            width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            background: var(--bg-input); border: 1px solid rgba(255,255,255,0.10);
+            border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s;
+        }
+        .field input::placeholder { color: var(--text-3); }
+        .field input:focus { border-color: var(--green); }
+
+        /* Suggestion hint shown under monthly contribution field */
+        .field-hint { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+        .field-hint span { color: var(--green); font-weight: 500; }
+
+        .btn { width: 100%; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: #fff; border: none; border-radius: var(--pill); cursor: pointer; transition: filter 0.2s, transform 0.15s; }
+        .btn:hover { filter: brightness(0.88); transform: translateY(-1px); }
+        .btn-green { background: var(--green); }
+        .btn-blue  { background: #3b82f6; }
+        .btn-sm { width: auto; padding: 6px 14px; font-size: 12px; }
+
+        /* --- Goal cards --- */
+        .goal-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin-bottom: 12px; }
+        .goal-card:last-child { margin-bottom: 0; }
+        .goal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .goal-name { font-size: 15px; font-weight: 500; color: var(--text-1); }
+        .goal-amounts { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+        .goal-amounts span { color: var(--green); font-weight: 500; }
+
+        /* Progress bar track and fill */
+        .progress-track { width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+        .progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s ease; }
+        /* Amber fill when goal is getting close (>75%) */
+        .progress-fill.near { background: var(--amber); }
+        /* Green fill when complete */
+        .progress-fill.done { background: var(--green); }
+
+        .goal-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 12px; }
+        .goal-pct { font-weight: 500; color: var(--text-2); }
+
+        /* Inline contribution form shown inside each goal card */
+        .contribution-row { display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .contribution-row input {
+            flex: 1; padding: 7px 10px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            background: var(--bg-input); border: 1px solid rgba(255,255,255,0.10);
+            border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s;
+        }
+        .contribution-row input:focus { border-color: var(--green); }
+
+        /* Delete button */
+        .btn-del { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; transition: color 0.2s, border-color 0.2s, background 0.2s; }
+        .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+
+        /* Empty state shown when user has no goals yet */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-3); font-size: 14px; }
+        .empty-state span { font-size: 32px; display: block; margin-bottom: 12px; }
+
+        /* Completion badge shown when goal is 100% */
+        .goal-complete { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: var(--pill); background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <a href="{% url 'dashboard' %}" class="topbar-brand">
+        <!-- Inline SVG logo -->
+        <svg height="58" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <defs>
+                <linearGradient id="tblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                <linearGradient id="tgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                <linearGradient id="tarrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+            </defs>
+            <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#tblue)"/>
+            <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#tblue)"/>
+            <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#tgreen)"/>
+            <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#tgreen)"/>
+            <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+            <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#tarrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <polygon points="44,13 54,17 47,24" fill="url(#tarrow)"/>
+            <text x="64" y="36" font-family="'Arial Black',sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+            <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+        </svg>
+    </a>
+    <div class="topbar-right">
+        <span class="topbar-month">April 2026</span>
+        <div class="topbar-user">
+            <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
+            {{ user.username }}
+        </div>
+        <a href="{% url 'logout' %}" class="topbar-logout">Log out</a>
+    </div>
+</header>
+
+<div class="app-body">
+
+    <!-- SIDEBAR — Savings Goals is active on this page -->
+    <nav class="sidebar">
+        <div class="sb-section">Overview</div>
+        <a href="{% url 'dashboard' %}" class="sb-item">
+            <span class="sb-icon">📊</span> Dashboard
+        </a>
+
+        <div class="sb-section">Finances</div>
+        <a href="#" class="sb-item"><span class="sb-icon">💷</span> Income</a>
+        <a href="#" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
+        <!-- Active state on Savings Goals -->
+        <a href="{% url 'savings_goals' %}" class="sb-item active">
+            <span class="sb-icon">🎯</span> Savings Goals
+        </a>
+
+        <div class="sb-section">Compare &amp; Save</div>
+        <a href="#" class="sb-item"><span class="sb-icon">🚗</span> Car Insurance</a>
+        <a href="#" class="sb-item"><span class="sb-icon">⚡</span> Energy</a>
+        <a href="#" class="sb-item"><span class="sb-icon">📡</span> Broadband</a>
+        <a href="#" class="sb-item"><span class="sb-icon">🏠</span> Home Insurance</a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+        <div class="page-title">Savings Goals</div>
+        <!-- Shows the user's current disposable income as context -->
+        <div class="page-sub">
+            Your disposable income this month is
+            <strong style="color:var(--green);">£{{ leftover }}</strong>.
+            We suggest putting <strong style="color:var(--green);">£{{ suggested_contribution }}</strong> (20%) towards your goals.
+        </div>
+
+        <div class="goals-grid">
+
+            <!-- ADD GOAL FORM -->
+            <div class="card">
+                <div class="card-title">🎯 Add a new goal</div>
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <!-- Goal name -->
+                    <div class="field">
+                        <label for="id_name">Goal name</label>
+                        {{ form.name }}
+                    </div>
+
+                    <!-- Target amount -->
+                    <div class="field">
+                        <label for="id_target_amount">Target amount (£)</label>
+                        {{ form.target_amount }}
+                    </div>
+
+                    <!-- Current amount already saved -->
+                    <div class="field">
+                        <label for="id_current_amount">Already saved (£)</label>
+                        {{ form.current_amount }}
+                    </div>
+
+                    <!-- Monthly contribution — pre-filled with suggested amount -->
+                    <div class="field">
+                        <label for="id_monthly_contribution">Monthly contribution (£)</label>
+                        {{ form.monthly_contribution }}
+                        <!-- Hint showing where the suggestion came from -->
+                        <div class="field-hint">
+                            Suggested: <span>£{{ suggested_contribution }}</span> — 20% of your disposable income
+                        </div>
+                    </div>
+
+                    <!-- name="add_goal" identifies this form in views.py -->
+                    <button type="submit" name="add_goal" class="btn btn-green">+ Add Goal</button>
+                </form>
+            </div>
+
+            <!-- GOALS LIST -->
+            <div>
+                {% if goals %}
+                    {% for goal in goals %}
+                        <div class="goal-card">
+                            <div class="goal-header">
+                                <div>
+                                    <div class="goal-name">
+                                        {{ goal.name }}
+                                        <!-- Completion badge shown when goal is fully funded -->
+                                        {% if goal.progress_percent == 100 %}
+                                            <span class="goal-complete">✓ Complete</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="goal-amounts">
+                                        <span>£{{ goal.current_amount }}</span> saved of £{{ goal.target_amount }}
+                                    </div>
+                                </div>
+                                <!-- Delete goal link -->
+                                <a href="{% url 'delete_goal' goal.pk %}"
+                                   class="btn-del"
+                                   onclick="return confirm('Delete this goal?')">×</a>
+                            </div>
+
+                            <!-- Progress bar — width driven by goal.progress_percent -->
+                            <div class="progress-track">
+                                <div class="progress-fill {% if goal.progress_percent == 100 %}done{% elif goal.progress_percent >= 75 %}near{% endif %}"
+                                     style="width: {{ goal.progress_percent }}%;"></div>
+                            </div>
+
+                            <!-- Percentage + months remaining -->
+                            <div class="goal-meta">
+                                <span class="goal-pct">{{ goal.progress_percent }}% complete</span>
+                                <span>
+                                    {% if goal.months_remaining %}
+                                        ~{{ goal.months_remaining }} month{{ goal.months_remaining|pluralize }} to go
+                                        &nbsp;·&nbsp; £{{ goal.monthly_contribution }}/mo
+                                    {% elif goal.progress_percent == 100 %}
+                                        🎉 Goal reached!
+                                    {% else %}
+                                        Set a monthly contribution to see your timeline
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Inline contribution form — adds money to the goal -->
+                            <form method="POST">
+                                {% csrf_token %}
+                                <!-- Hidden field passes the goal ID to views.py -->
+                                <input type="hidden" name="goal_id" value="{{ goal.pk }}" />
+                                <div class="contribution-row">
+                                    <input type="number"
+                                           name="contribution_amount"
+                                           placeholder="Add contribution £"
+                                           step="0.01"
+                                           min="0" />
+                                    <!-- name="add_contribution" identifies this form in views.py -->
+                                    <button type="submit" name="add_contribution" class="btn btn-blue btn-sm">
+                                        + Add
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Shown when the user has no goals yet -->
+                    <div class="empty-state">
+                        <span>🎯</span>
+                        No savings goals yet.<br />Add your first goal to get started.
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
