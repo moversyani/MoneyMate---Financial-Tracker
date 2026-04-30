@@ -4,8 +4,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Main dashboard
-    path('', views.dashboard, name='dashboard'),
+    # Landing page — shown to logged-out users, redirects to dashboard if logged in
+    path('', views.landing, name='landing'),
+
+    # Main dashboard — requires login
+    path('dashboard/', views.dashboard, name='dashboard'),
 
     # Bill and income delete routes
     path('delete/<int:pk>/', views.delete_expense, name='delete_expense'),

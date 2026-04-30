@@ -71,7 +71,5 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # --- Auth settings ---
-# Where to redirect users who try to access a @login_required page without being logged in
 LOGIN_URL = '/login/'
-# Where to redirect users after a successful login
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard/'  # where to go after login

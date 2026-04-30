@@ -12,9 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
 
     <style>
-        /* --- Reset & tokens --- */
+        /* --- Reset: removes default browser margin/padding on all elements --- */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        /* --- Design tokens: CSS variables used throughout for consistent colours/sizing --- */
         :root {
             --green:       #10b981;
             --green-dark:  #059669;
@@ -40,10 +41,10 @@
             --pill:        100px;
         }
 
-        /* --- Base --- */
+        /* --- Base page styles --- */
         body { font-family: 'DM Sans', sans-serif; background: var(--bg-page); color: var(--text-1); min-height: 100vh; }
 
-        /* --- Topbar --- */
+        /* --- Topbar: fixed across the top, z-index keeps it above all content --- */
         .topbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 300;
             height: var(--topbar-h); background: var(--bg-bar);
@@ -54,26 +55,28 @@
         .topbar-right { display: flex; align-items: center; gap: 14px; }
         .topbar-month { font-size: 12px; color: var(--text-3); background: var(--bg-input); padding: 4px 12px; border-radius: var(--pill); border: 1px solid var(--border); }
         .topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+        /* Avatar circle shows first letter of username */
         .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green); }
         .topbar-logout { font-size: 12px; color: var(--text-3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
         .topbar-logout:hover { color: var(--text-1); border-color: rgba(255,255,255,0.25); }
 
-        /* --- Layout shell --- */
+        /* --- Layout: flex row so sidebar and main sit side by side --- */
         .app-body { display: flex; padding-top: var(--topbar-h); min-height: 100vh; }
 
-        /* --- Sidebar --- */
+        /* --- Sidebar: fixed left panel, top offset matches topbar height --- */
         .sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; position: fixed; top: var(--topbar-h); bottom: 0; left: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
         .sb-section { padding: 16px 18px 5px; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
         .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 13px; color: var(--text-2); text-decoration: none; border-left: 2px solid transparent; transition: background 0.15s, color 0.15s; }
         .sb-item:hover { background: var(--bg-input); color: var(--text-1); }
+        /* Active state: green left border highlights the current page */
         .sb-item.active { background: var(--green-dim); color: var(--green); border-left-color: var(--green); font-weight: 500; }
         .sb-icon { font-size: 14px; width: 18px; text-align: center; }
 
-        /* --- Main content --- */
+        /* --- Main content area: offset left by sidebar width --- */
         .main { margin-left: var(--sidebar-w); flex: 1; padding: 24px; max-width: 1200px; }
         .page-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 20px; }
 
-        /* --- Metric cards row --- */
+        /* --- Metric cards: 4-column grid at the top of the dashboard --- */
         .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
         .metric { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
         .metric-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
@@ -84,24 +87,46 @@
         .metric-val.b { color: var(--blue); }
         .metric-sub { font-size: 11px; color: var(--text-3); margin-top: 6px; }
 
-        /* --- Two-column grid --- */
+        /* --- Two-column grid: left col wider for charts, right col for forms --- */
         .grid-2 { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 16px; }
         .col { display: flex; flex-direction: column; gap: 16px; }
 
-        /* --- Card --- */
+        /* --- Card: dark rounded container used for every content block --- */
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; }
         .card-title { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: var(--pill); background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
 
-        /* --- Chart --- */
+        /* --- Chart toggle: Doughnut / Bars buttons in the card title row --- */
+        .chart-toggle { display: flex; gap: 4px; margin-left: auto; }
+        .chart-toggle button {
+            font-size: 11px; padding: 3px 10px; border-radius: var(--pill);
+            border: 1px solid var(--border); background: none;
+            color: var(--text-3); cursor: pointer;
+            font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+        }
+        /* Active button highlighted in green */
+        .chart-toggle button.active { background: var(--green-dim); color: var(--green); border-color: rgba(16,185,129,0.4); }
+
+        /* --- Doughnut chart wrapper: fixed height so Chart.js sizes correctly --- */
         .chart-wrap { position: relative; height: 240px; width: 100%; }
+
+        /* --- Bar chart view: hidden by default, swapped in by showBars() --- */
+        .bar-wrap { display: none; padding: 8px 0; }
+        .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .bar-row:last-child { margin-bottom: 0; }
+        .bar-label { font-size: 12px; color: var(--text-2); width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bar-track { flex: 1; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+        .bar-amt { font-size: 11px; color: var(--text-3); width: 48px; text-align: right; flex-shrink: 0; }
+
+        /* --- Summary row shown below both chart views --- */
         .chart-summary { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
         .cs-label { font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
         .cs-val { font-size: 15px; font-weight: 500; }
         .cs-val.g { color: var(--green); }
         .cs-val.r { color: var(--red); }
 
-        /* --- Intelligence tip cards --- */
+        /* --- Intelligence tip cards: shown when a category exceeds its benchmark --- */
         .tip { background: var(--amber-dim); border: 1px solid var(--amber-bdr); border-radius: var(--r-sm); padding: 13px 15px; margin-bottom: 10px; }
         .tip:last-child { margin-bottom: 0; }
         .tip-title { font-size: 13px; font-weight: 500; color: var(--amber); margin-bottom: 5px; }
@@ -109,7 +134,7 @@
         .tip-saving { font-weight: 500; color: var(--green); }
         .tip-ok { font-size: 13px; color: var(--green); }
 
-        /* --- Forms (styles Django's form.as_p output) --- */
+        /* --- Forms: styles Django's {{ form.as_p }} output --- */
         form p { margin-bottom: 12px; }
         form p label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
         form p input, form p select {
@@ -118,7 +143,9 @@
             border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s;
         }
         form p input::placeholder { color: var(--text-3); }
+        /* Green border on focus for clear visual feedback */
         form p input:focus, form p select:focus { border-color: var(--green); }
+        /* Custom dropdown arrow via inline SVG background image */
         form p select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b92a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -126,49 +153,45 @@
         }
         form p select option { background: var(--bg-input); color: var(--text-1); }
 
-        /* --- Buttons --- */
+        /* --- Shared button base: full width pill shape --- */
         .btn { width: 100%; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: #fff; border: none; border-radius: var(--pill); cursor: pointer; transition: filter 0.2s, transform 0.15s; }
         .btn:hover { filter: brightness(0.88); transform: translateY(-1px); }
         .btn-green { background: var(--green); }
         .btn-blue  { background: #3b82f6; }
 
-        /* --- Bill list items --- */
+        /* --- Bill list: each <li> wraps a clickable row + hidden details panel --- */
         .item-list { list-style: none; padding: 0; margin-top: 14px; }
-        /* Each li wraps the clickable row + expandable details panel */
         .item-list li { border-bottom: 1px solid var(--border); }
         .item-list li:last-child { border-bottom: none; }
-
-        /* Clickable bill row */
+        /* Clickable row — onclick toggles the details panel below it */
         .bill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px; cursor: pointer; }
         .bill-row:hover .item-name { color: var(--green); }
-
-        /* Chevron rotates when row is expanded */
+        /* Chevron rotates 180° when the row is expanded */
         .bill-chevron { font-size: 10px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
         .bill-chevron.open { transform: rotate(180deg); }
-
-        /* Expandable details panel — hidden by default */
+        /* Details panel: hidden until the row is clicked */
         .bill-details { display: none; padding: 10px 12px 14px 24px; background: var(--bg-input); border-radius: var(--r-sm); margin-bottom: 10px; font-size: 12px; color: var(--text-2); }
         .bill-details.open { display: block; }
         .bill-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
         .bd-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
         .bd-value { font-size: 12px; color: var(--text-1); }
-
         .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .item-info { flex: 1; }
         .item-name { font-weight: 500; color: var(--text-1); transition: color 0.15s; }
         .item-cat  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
         .item-amt  { font-weight: 500; flex-shrink: 0; }
+        /* Delete button turns red on hover */
         .btn-del { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: color 0.2s, border-color 0.2s, background 0.2s; }
         .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
 
-        /* Income list — simpler, no expand needed */
+        /* --- Income list: simpler than bill list, no expand panel needed --- */
         .income-list { list-style: none; padding: 0; margin-top: 14px; }
         .income-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
         .income-list li:last-child { border-bottom: none; }
 
         .divider { height: 1px; background: var(--border); margin: 18px 0; }
 
-        /* --- API comparison rows --- */
+        /* --- API comparison rows: icon + name/source + compare link --- */
         .api-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
         .api-row:last-child { border-bottom: none; }
         .api-icon { width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--bg-input); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
@@ -178,9 +201,10 @@
         .api-link { font-size: 12px; color: var(--blue); font-weight: 500; text-decoration: none; padding: 4px 10px; border-radius: var(--pill); border: 1px solid rgba(96,165,250,0.3); white-space: nowrap; transition: background 0.2s; }
         .api-link:hover { background: rgba(96,165,250,0.1); }
 
-        /* --- Advanced details toggle inside bill form --- */
+        /* --- Advanced details toggle inside the bill form --- */
         .adv-toggle { background: none; border: none; color: var(--text-3); font-size: 12px; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif; margin-bottom: 10px; }
         .adv-toggle:hover { color: var(--text-2); }
+        /* Hidden by default — JS toggles display on click */
         .adv-body { display: none; padding: 14px; background: var(--bg-input); border-radius: var(--r-sm); border: 1px solid var(--border); margin-bottom: 12px; }
         .adv-body .field { margin-bottom: 12px; }
         .adv-body .field:last-child { margin-bottom: 0; }
@@ -189,18 +213,19 @@
         .adv-body input:focus { border-color: var(--green); }
         .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        /* --- Savings goal progress bars (used in dashboard summary card) --- */
+        /* --- Savings goal progress bars in the dashboard summary card --- */
         .goal-bar-track { width: 100%; height: 5px; background: var(--bg-input); border-radius: 3px; overflow: hidden; margin: 6px 0 4px; }
         .goal-bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s ease; }
 
-        /* Pulse animation — used on the scanning dot and page loader */
+        /* --- Pulse animation: used on the scanning dot and page loader logo --- */
         @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+        /* Page loader covers the screen until window.onload fires */
         #page-loader { position: fixed; inset: 0; z-index: 9999; background: var(--bg-page); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; transition: opacity 0.3s; }
         #page-loader.hidden { opacity: 0; pointer-events: none; }
         .loader-logo { animation: pulse 1.2s ease-in-out infinite; }
         .loader-text { font-size: 13px; color: var(--text-3); font-family: 'DM Sans', sans-serif; }
 
-        /* Deal card — green bordered tip shown when a deal is found */
+        /* --- Deal cards: injected by the deal scanner JS --- */
         .deal { background: var(--green-dim); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--r-sm); padding: 13px 15px; margin-bottom: 10px; animation: fadeIn 0.4s ease both; }
         .deal:last-child { margin-bottom: 0; }
         .deal-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
@@ -210,19 +235,20 @@
         .deal-saving { font-weight: 500; color: var(--green); }
         .deal-link { font-size: 12px; color: var(--blue); text-decoration: none; margin-top: 8px; display: inline-block; }
         .deal-link:hover { text-decoration: underline; }
+        /* Cards fade up into view when injected */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Scrollbar */
+        /* --- Slim custom scrollbar --- */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
     </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
+<!-- TOPBAR: fixed bar with logo, month badge, username avatar and logout -->
 <header class="topbar">
     <a href="{% url 'dashboard' %}" class="topbar-brand">
-        <!-- Inline SVG logo — no external files needed -->
+        <!-- Inline SVG logo — no external file needed -->
         <svg height="58" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
             <defs>
                 <linearGradient id="tblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
@@ -244,6 +270,7 @@
     <div class="topbar-right">
         <span class="topbar-month">April 2026</span>
         <div class="topbar-user">
+            <!-- slice:":1"|upper takes first letter of username and uppercases it -->
             <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
             {{ user.username }}
         </div>
@@ -253,7 +280,7 @@
 
 <div class="app-body">
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR: fixed left nav — active class highlights the current page -->
     <nav class="sidebar">
         <div class="sb-section">Overview</div>
         <a href="{% url 'dashboard' %}" class="sb-item active">
@@ -263,7 +290,6 @@
         <div class="sb-section">Finances</div>
         <a href="#" class="sb-item"><span class="sb-icon">💷</span> Income</a>
         <a href="#" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
-        <!-- Savings Goals now links to the dedicated /savings/ page -->
         <a href="{% url 'savings_goals' %}" class="sb-item">
             <span class="sb-icon">🎯</span> Savings Goals
         </a>
@@ -275,11 +301,11 @@
         <a href="#" class="sb-item"><span class="sb-icon">🏠</span> Home Insurance</a>
     </nav>
 
-    <!-- MAIN -->
+    <!-- MAIN CONTENT -->
     <main class="main">
         <div class="page-title">Dashboard</div>
 
-        <!-- METRIC CARDS — values injected from views.py context -->
+        <!-- METRIC CARDS: 4 summary figures from views.py context -->
         <div class="metrics">
             <div class="metric">
                 <div class="metric-label">Total income</div>
@@ -289,6 +315,7 @@
             <div class="metric">
                 <div class="metric-label">Total bills</div>
                 <div class="metric-val r">£{{ total_expenses }}</div>
+                <!-- pluralize adds "s" when count is 0 or more than 1 -->
                 <div class="metric-sub">{{ expenses|length }} active bill{{ expenses|length|pluralize }}</div>
             </div>
             <div class="metric">
@@ -312,14 +339,44 @@
             <!-- LEFT COL -->
             <div class="col">
 
-                <!-- Spending chart card -->
+                <!-- SPENDING CHART: toggles between doughnut and bar view -->
                 <div class="card">
                     <div class="card-title">
                         Spending breakdown <span class="pill">This month</span>
+                        <!-- Toggle buttons — doughnut active by default -->
+                        <div class="chart-toggle">
+                            <button id="btn-donut" class="active" onclick="showDonut()">Doughnut</button>
+                            <button id="btn-bars" onclick="showBars()">Bars</button>
+                        </div>
                     </div>
-                    <div class="chart-wrap">
-                        <canvas id="spendingChart"></canvas>
+
+                    <!-- Doughnut view: shown by default, Chart.js renders into the canvas -->
+                    <div id="view-donut">
+                        <div class="chart-wrap">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
                     </div>
+
+                    <!-- Bar view: hidden by default, width uses Django's widthratio tag -->
+                    <div id="view-bars" class="bar-wrap">
+                        {% for expense in expenses %}
+                            <div class="bar-row">
+                                <div class="bar-label">{{ expense.name }}</div>
+                                <!-- widthratio calculates (monthly_amount / total_expenses) * 100 for bar width -->
+                                <div class="bar-track">
+                                    <div class="bar-fill"
+                                         style="width:{% if total_expenses > 0 %}{% widthratio expense.monthly_amount|floatformat:0 total_expenses 100 %}{% else %}0{% endif %}%;
+                                                background: hsl({{ forloop.counter0 }}40, 70%, 58%);">
+                                    </div>
+                                </div>
+                                <div class="bar-amt">£{{ expense.monthly_amount|floatformat:0 }}</div>
+                            </div>
+                        {% empty %}
+                            <p style="font-size:13px;color:var(--text-3);padding:20px 0;text-align:center;">No bills added yet.</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Summary figures shown below both chart views -->
                     <div class="chart-summary">
                         <div><div class="cs-label">Total income</div><div class="cs-val g">£{{ total_income }}</div></div>
                         <div><div class="cs-label">Total bills</div><div class="cs-val r">£{{ total_expenses }}</div></div>
@@ -327,28 +384,27 @@
                     </div>
                 </div>
 
-                <!-- Savings Goals summary card — shows progress bars for each goal -->
+                <!-- SAVINGS GOALS SUMMARY: progress bars linking to the full /savings/ page -->
                 <div class="card">
                     <div class="card-title">
                         🎯 Savings Goals
-                        <!-- Link to the full savings page -->
                         <a href="{% url 'savings_goals' %}" style="margin-left:auto;font-size:11px;color:var(--blue);text-decoration:none;">View all →</a>
                     </div>
                     {% if goals %}
                         {% for goal in goals %}
                             <div style="margin-bottom:14px;">
-                                <!-- Goal name + percentage -->
                                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
                                     <span style="font-size:13px;font-weight:500;">{{ goal.name }}</span>
+                                    <!-- progress_percent is a method on the SavingsGoal model -->
                                     <span style="font-size:11px;color:var(--text-3);">{{ goal.progress_percent }}%</span>
                                 </div>
-                                <!-- Progress bar — width driven by goal.progress_percent from the model -->
+                                <!-- Bar width driven by progress_percent (0–100) -->
                                 <div class="goal-bar-track">
                                     <div class="goal-bar-fill" style="width:{{ goal.progress_percent }}%;"></div>
                                 </div>
-                                <!-- Saved so far + months remaining -->
                                 <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);">
                                     <span>£{{ goal.current_amount }} of £{{ goal.target_amount }}</span>
+                                    <!-- months_remaining is a method on the SavingsGoal model -->
                                     {% if goal.months_remaining %}
                                         <span>~{{ goal.months_remaining }} month{{ goal.months_remaining|pluralize }} left</span>
                                     {% endif %}
@@ -356,30 +412,30 @@
                             </div>
                         {% endfor %}
                     {% else %}
-                        <!-- Shown when user has no goals yet -->
                         <p style="font-size:13px;color:var(--text-3);">
-                            No goals yet.
-                            <a href="{% url 'savings_goals' %}" style="color:var(--green);">Add your first →</a>
+                            No goals yet. <a href="{% url 'savings_goals' %}" style="color:var(--green);">Add your first →</a>
                         </p>
                     {% endif %}
                 </div>
 
-                <!-- Intelligence card: Django tips + JS-powered simulated deal scanner -->
+                <!-- INTELLIGENCE CARD: Django overspend tips + JS deal scanner -->
                 <div class="card">
                     <div class="card-title">
                         💡 MoneyMate Intelligence
+                        <!-- Scan badge updates once the deal scanner finishes -->
                         <span id="scan-badge" style="font-size:11px;color:var(--text-3);font-family:'DM Sans',sans-serif;font-weight:400;display:flex;align-items:center;gap:5px;margin-left:auto;">
                             <span id="scan-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.2s ease-in-out infinite;"></span>
                             Scanning for deals...
                         </span>
                     </div>
 
-                    <!-- Django tips: shown when a category exceeds its benchmark in views.py -->
+                    <!-- Django tips: one per category that exceeds its benchmark in views.py -->
                     {% if recommendations %}
                         {% for rec in recommendations %}
                             <div class="tip">
                                 <div class="tip-title">{{ rec.category }}</div>
                                 <div class="tip-body">
+                                    <!-- rec.companies lists which providers triggered this tip -->
                                     {% if rec.companies %}
                                         With: <strong style="color:var(--amber);">{{ rec.companies|join:", " }}</strong><br/>
                                     {% endif %}
@@ -392,11 +448,11 @@
                         <p class="tip-ok" style="margin-bottom:10px;">✓ Your spending looks healthy. No major savings found.</p>
                     {% endif %}
 
-                    <!-- JS deal cards injected here by the simulated scanner below -->
+                    <!-- Deal cards injected here by the scanner script below -->
                     <div id="deal-cards"></div>
                 </div>
 
-                <!-- Compare & Save — static redirect links, live API integration in next phase -->
+                <!-- COMPARE & SAVE: static redirect links, live APIs in next phase -->
                 <div class="card">
                     <div class="card-title">🔄 Compare &amp; Save</div>
                     <div class="api-row">
@@ -427,20 +483,23 @@
             <!-- RIGHT COL -->
             <div class="col">
 
-                <!-- Add Income form -->
+                <!-- ADD INCOME FORM -->
                 <div class="card">
                     <div class="card-title">Add Income</div>
                     <form method="POST">
-                        {% csrf_token %}
-                        {{ income_form.as_p }}
+                        {% csrf_token %} <!-- Django requires this on every POST to prevent CSRF attacks -->
+                        {{ income_form.as_p }} <!-- renders IncomeForm fields as <p> tags -->
+                        <!-- name="add_income" lets views.py identify which form was submitted -->
                         <button type="submit" name="add_income" class="btn btn-green">+ Add Income</button>
                     </form>
+                    <!-- List of existing income records from the incomes queryset -->
                     <ul class="income-list">
                         {% for inc in incomes %}
                             <li>
                                 <div class="dot" style="background: var(--green);"></div>
                                 <div class="item-info"><div class="item-name">{{ inc.source }}</div></div>
                                 <span class="item-amt">£{{ inc.amount }}</span>
+                                <!-- pk passes the record's primary key so views.py knows which to delete -->
                                 <a href="{% url 'delete_income' inc.pk %}" class="btn-del" onclick="return confirm('Delete this income?')">×</a>
                             </li>
                         {% empty %}
@@ -449,31 +508,27 @@
                     </ul>
                 </div>
 
-                <!-- Add Bill form -->
+                <!-- ADD BILL FORM -->
                 <div class="card">
                     <div class="card-title">Add a New Bill</div>
                     <form method="POST">
                         {% csrf_token %}
 
-                        <!-- CATEGORY first — sets context before user fills other fields -->
+                        <!-- Category first so it sets context before other fields are filled -->
                         <p>
                             <label for="id_category">Category:</label>
                             {{ expense_form.category }}
                         </p>
-
-                        <!-- Bill name -->
                         <p>
                             <label for="id_name">Name:</label>
                             {{ expense_form.name }}
                         </p>
-
-                        <!-- Company -->
                         <p>
                             <label for="id_company">Company:</label>
                             {{ expense_form.company }}
                         </p>
 
-                        <!-- Amount + Frequency side by side -->
+                        <!-- Amount and frequency displayed side by side using a 2-col grid -->
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
                             <p style="margin:0;">
                                 <label for="id_amount">Amount (£):</label>
@@ -485,13 +540,12 @@
                             </p>
                         </div>
 
-                        <!-- Bill type: Fixed or Variable -->
                         <p>
                             <label for="id_bill_type">Bill type:</label>
                             {{ expense_form.bill_type }}
                         </p>
 
-                        <!-- Advanced details — hidden by default, toggle reveals extra fields -->
+                        <!-- Advanced section hidden by default — JS toggles display on click -->
                         <div style="margin-top:4px; margin-bottom:12px;">
                             <button type="button" class="adv-toggle" onclick="
                                 const body = this.nextElementSibling;
@@ -499,7 +553,6 @@
                                 this.textContent = body.style.display === 'block' ? '− Hide advanced details' : '+ Advanced details';
                             ">+ Advanced details</button>
 
-                            <!-- Hidden section: customer number, tariff, start/end dates -->
                             <div class="adv-body">
                                 <div class="field">
                                     <label for="id_customer_number">Customer / policy number:</label>
@@ -522,29 +575,29 @@
                             </div>
                         </div>
 
-                        <!-- name="add_expense" tells views.py which form was submitted -->
+                        <!-- name="add_expense" lets views.py identify which form was submitted -->
                         <button type="submit" name="add_expense" class="btn btn-blue">+ Save Bill</button>
                     </form>
 
                     <div class="divider"></div>
                     <div class="card-title" style="margin-bottom: 8px;">Recent Bills</div>
 
-                    <!-- Bill list — each row is clickable and expands to show advanced details -->
+                    <!-- Bill list: clicking a row toggles its details panel open/closed -->
                     <ul class="item-list">
                         {% for expense in expenses %}
                             <li>
-                                <!-- Clickable row — toggles the details panel below -->
+                                <!-- onclick toggles the .bill-details panel directly below this row -->
                                 <div class="bill-row" onclick="
                                     const details = this.nextElementSibling;
                                     const chevron = this.querySelector('.bill-chevron');
                                     details.classList.toggle('open');
                                     chevron.classList.toggle('open');
                                 ">
+                                    <!-- hsl colour shifts 40° per bill so each gets a unique dot colour -->
                                     <div class="dot" style="background: hsl({{ forloop.counter0 }}40, 70%, 60%);"></div>
                                     <div class="item-info">
                                         <div class="item-name">
                                             {{ expense.name }}
-                                            <!-- Company badge shown inline if set -->
                                             {% if expense.company %}
                                                 <span style="font-size:10px;font-weight:500;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;vertical-align:middle;">
                                                     {{ expense.company }}
@@ -552,65 +605,37 @@
                                             {% endif %}
                                         </div>
                                         <div class="item-cat">
+                                            <!-- get_category_display returns the human-readable label e.g. "Utilities (Gas/Water/Elec)" -->
                                             {{ expense.get_category_display }}
-                                            <!-- Annual badge shown if bill is paid yearly -->
                                             {% if expense.frequency == 'ANNUALLY' %}
                                                 <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);margin-left:4px;">Annual</span>
                                             {% endif %}
-                                            <!-- Variable badge shown if bill type is variable -->
                                             {% if expense.bill_type == 'VARIABLE' %}
                                                 <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid rgba(251,191,36,0.25);margin-left:4px;">Variable</span>
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <!-- Show original amount + monthly equivalent for annual bills -->
                                     <div style="text-align:right; flex-shrink:0;">
                                         <div class="item-amt">£{{ expense.amount }}</div>
+                                        <!-- Show monthly equivalent for annual bills -->
                                         {% if expense.frequency == 'ANNUALLY' %}
                                             <div style="font-size:10px;color:var(--text-3);">£{{ expense.monthly_amount|floatformat:2 }}/mo</div>
                                         {% endif %}
                                     </div>
-                                    <!-- Chevron rotates when row is expanded -->
                                     <span class="bill-chevron">▼</span>
-                                    <!-- event.stopPropagation() stops delete click from triggering the expand -->
+                                    <!-- stopPropagation prevents delete click from also triggering the expand -->
                                     <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="event.stopPropagation(); return confirm('Delete this bill?')">×</a>
                                 </div>
 
                                 <!-- Expandable details panel — hidden until row is clicked -->
                                 <div class="bill-details">
                                     <div class="bill-details-grid">
-                                        <div>
-                                            <div class="bd-label">Bill type</div>
-                                            <div class="bd-value">{{ expense.get_bill_type_display }}</div>
-                                        </div>
-                                        <div>
-                                            <div class="bd-label">Frequency</div>
-                                            <div class="bd-value">{{ expense.get_frequency_display }}</div>
-                                        </div>
-                                        {% if expense.customer_number %}
-                                        <div>
-                                            <div class="bd-label">Customer / policy no.</div>
-                                            <div class="bd-value">{{ expense.customer_number }}</div>
-                                        </div>
-                                        {% endif %}
-                                        {% if expense.tariff_details %}
-                                        <div>
-                                            <div class="bd-label">Tariff / policy</div>
-                                            <div class="bd-value">{{ expense.tariff_details }}</div>
-                                        </div>
-                                        {% endif %}
-                                        {% if expense.start_date %}
-                                        <div>
-                                            <div class="bd-label">Start date</div>
-                                            <div class="bd-value">{{ expense.start_date }}</div>
-                                        </div>
-                                        {% endif %}
-                                        {% if expense.end_date %}
-                                        <div>
-                                            <div class="bd-label">End date</div>
-                                            <div class="bd-value">{{ expense.end_date }}</div>
-                                        </div>
-                                        {% endif %}
+                                        <div><div class="bd-label">Bill type</div><div class="bd-value">{{ expense.get_bill_type_display }}</div></div>
+                                        <div><div class="bd-label">Frequency</div><div class="bd-value">{{ expense.get_frequency_display }}</div></div>
+                                        {% if expense.customer_number %}<div><div class="bd-label">Customer / policy no.</div><div class="bd-value">{{ expense.customer_number }}</div></div>{% endif %}
+                                        {% if expense.tariff_details %}<div><div class="bd-label">Tariff / policy</div><div class="bd-value">{{ expense.tariff_details }}</div></div>{% endif %}
+                                        {% if expense.start_date %}<div><div class="bd-label">Start date</div><div class="bd-value">{{ expense.start_date }}</div></div>{% endif %}
+                                        {% if expense.end_date %}<div><div class="bd-label">End date</div><div class="bd-value">{{ expense.end_date }}</div></div>{% endif %}
                                     </div>
                                 </div>
                             </li>
@@ -629,24 +654,20 @@
     </main>
 </div>
 
-<!-- CHART SCRIPT
-     Django injects expense labels and amounts directly into the JS arrays at render time.
-     Chart.js then reads those arrays to build the doughnut. -->
+<!-- CHART SCRIPT: Django injects expense data into JS arrays at render time -->
 <script>
 window.onload = function () {
-    // Hide the page loader overlay once everything has rendered
+    // Hide the page loader once everything has rendered
     const loader = document.getElementById('page-loader');
     if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); }
 
     const ctx = document.getElementById('spendingChart').getContext('2d');
 
-    // Labels and data injected by Django — show bill name only under the chart
+    // Labels and data arrays built by Django at render time
     const labels = [{% for e in expenses %}"{{ e.name }}",{% endfor %}];
+    const data   = [{% for e in expenses %}{{ e.monthly_amount|floatformat:2 }},{% endfor %}];
 
-    // Use monthly_amount so annual bills display their monthly equivalent in the chart
-    const data = [{% for e in expenses %}{{ e.monthly_amount|floatformat:2 }},{% endfor %}];
-
-    // Evenly spaced hsl colours — one unique colour per slice
+    // Evenly spaced hsl colour per slice — shifts hue so each bill looks different
     const colors = data.map((_, i) => `hsl(${i * (360 / (data.length || 1))}, 65%, 58%)`);
 
     if (data.length > 0) {
@@ -654,28 +675,45 @@ window.onload = function () {
             type: 'doughnut',
             data: { labels, datasets: [{ data, backgroundColor: colors, hoverOffset: 10, borderWidth: 2, borderColor: '#1a1d27' }] },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14, font: { size: 11, family: 'DM Sans' }, color: '#8b92a8' } },
-                    tooltip: { callbacks: { label: ctx => {
-                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                        return ` £${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`;
-                    }}}
+                    tooltip: { callbacks: {
+                        // Custom tooltip: shows £ amount and % of total spend
+                        label: ctx => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            return ` £${ctx.raw} (${((ctx.raw / total) * 100).toFixed(1)}%)`;
+                        }
+                    }}
                 },
-                cutout: '65%'
+                cutout: '65%' // controls the doughnut hole size
             }
         });
     } else {
+        // Fallback text drawn on the canvas when no expenses exist
         ctx.font = "14px 'DM Sans'"; ctx.fillStyle = '#555c72'; ctx.textAlign = 'center';
         ctx.fillText('No bills added yet.', ctx.canvas.width / 2, ctx.canvas.height / 2);
     }
 };
+
+// Switch to doughnut view and update active button state
+function showDonut() {
+    document.getElementById('view-donut').style.display = 'block';
+    document.getElementById('view-bars').style.display  = 'none';
+    document.getElementById('btn-donut').classList.add('active');
+    document.getElementById('btn-bars').classList.remove('active');
+}
+
+// Switch to bar view and update active button state
+function showBars() {
+    document.getElementById('view-donut').style.display = 'none';
+    document.getElementById('view-bars').style.display  = 'block';
+    document.getElementById('btn-donut').classList.remove('active');
+    document.getElementById('btn-bars').classList.add('active');
+}
 </script>
 
-<!-- PAGE LOADER OVERLAY
-     Shows a pulsing logo while the page loads.
-     Hidden immediately once window.onload fires. -->
+<!-- PAGE LOADER: pulsing logo shown while the page loads, removed by window.onload -->
 <div id="page-loader">
     <div class="loader-logo">
         <svg height="80" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
@@ -699,77 +737,36 @@ window.onload = function () {
     <div class="loader-text">Loading MoneyMate...</div>
 </div>
 
-<!-- DEAL SCANNER SCRIPT
-     Simulates an active background scan for cheaper deals.
-     In production this would call real comparison APIs.
-     Deals are matched against the user's actual expense categories
-     injected by Django into the userBills array. -->
+<!-- DEAL SCANNER: checks user's bills against a simulated deal database
+     In production each dealPool entry would be replaced with a live API call -->
 <script>
 (function () {
-
-    // Django injects the user's actual bill data at render time
+    // Django injects the user's bill data into this array at render time
     const userBills = [
         {% for e in expenses %}
         { category: "{{ e.category }}", company: "{{ e.company|default:'' }}", name: "{{ e.name }}", amount: {{ e.monthly_amount|floatformat:2 }} },
         {% endfor %}
     ];
 
-    // Helper: check if user has a bill in a given category
+    // Returns true if the user has at least one bill in the given category
     const hasCategory = (cat) => userBills.some(b => b.category === cat);
+    // Returns the company name for a category to personalise deal text
+    const getCompany  = (cat) => { const b = userBills.find(b => b.category === cat); return b && b.company ? b.company : null; };
 
-    // Helper: get the company name for a category to personalise deal text
-    const getCompany = (cat) => {
-        const bill = userBills.find(b => b.category === cat);
-        return bill && bill.company ? bill.company : null;
-    };
-
-    // Simulated deal database — only shown if the user has that category
+    // Simulated deal database — keyed by expense category code
     const dealPool = {
-        'INSURANCE': {
-            icon: '🚗', title: 'Cheaper insurance found', provider: 'Admiral via MoneySupermarket', saving: '£312/yr',
-            body: (co) => `You currently pay ${co ? `with <strong>${co}</strong>` : 'for insurance'}. A cheaper policy is available right now.`,
-            link: 'https://www.moneysupermarket.com/car-insurance/', linkText: 'View deal →'
-        },
-        'UTILITIES': {
-            icon: '⚡', title: 'Better energy tariff available', provider: 'Octopus Energy via Ofgem data', saving: '£180/yr',
-            body: (co) => `Your ${co ? `<strong>${co}</strong> ` : ''}energy spend is above the Ofgem price cap benchmark.`,
-            link: 'https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you', linkText: 'Check tariffs →'
-        },
-        'MOBILE': {
-            icon: '📱', title: 'Cheaper mobile plan found', provider: 'iD Mobile via Uswitch', saving: '£96/yr',
-            body: (co) => `A SIM-only deal is cheaper than your ${co ? `<strong>${co}</strong> ` : ''}plan.`,
-            link: 'https://www.uswitch.com/mobiles/', linkText: 'View deal →'
-        },
-        'MORTGAGE': {
-            icon: '🏠', title: 'Remortgage deal available', provider: 'HSBC via MoneySupermarket', saving: '£600/yr',
-            body: () => 'Current fixed-rate deals are lower than your existing rate.',
-            link: 'https://www.moneysupermarket.com/mortgages/', linkText: 'Compare rates →'
-        },
-        'LOANS': {
-            icon: '🚙', title: 'Lower car finance rate found', provider: 'Zuto via Compare the Market', saving: '£240/yr',
-            body: (co) => `Refinancing your ${co ? `<strong>${co}</strong> ` : ''}agreement could reduce your monthly payment.`,
-            link: 'https://www.comparethemarket.com/car-finance/', linkText: 'Check eligibility →'
-        },
-        'GROCERIES': {
-            icon: '🛒', title: 'Cashback on grocery spend', provider: 'TopCashback', saving: '£60/yr',
-            body: () => 'Activate cashback on your regular supermarket to earn back automatically.',
-            link: 'https://www.topcashback.co.uk/supermarkets/', linkText: 'Activate cashback →'
-        },
-        'FUEL': {
-            icon: '⛽', title: 'Fuel cashback card available', provider: 'Motoring Club via AA', saving: '£80/yr',
-            body: () => 'A fuel cashback card could save you money on every fill-up.',
-            link: 'https://www.theaa.com/breakdown-cover/motoring-club/', linkText: 'View offer →'
-        },
-        'DEBTS': {
-            icon: '💳', title: '0% balance transfer found', provider: 'Barclaycard via MoneySupermarket', saving: 'Varies',
-            body: () => 'Transferring your balance to 0% could save you on interest charges.',
-            link: 'https://www.moneysupermarket.com/credit-cards/balance-transfer/', linkText: 'Check eligibility →'
-        }
+        'INSURANCE': { icon:'🚗', title:'Cheaper insurance found', provider:'Admiral via MoneySupermarket', saving:'£312/yr', body:(co)=>`You currently pay ${co?`with <strong>${co}</strong>`:'for insurance'}. A cheaper policy is available right now.`, link:'https://www.moneysupermarket.com/car-insurance/', linkText:'View deal →' },
+        'UTILITIES':  { icon:'⚡', title:'Better energy tariff available', provider:'Octopus Energy via Ofgem data', saving:'£180/yr', body:(co)=>`Your ${co?`<strong>${co}</strong> `:''}energy spend is above the Ofgem price cap benchmark.`, link:'https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you', linkText:'Check tariffs →' },
+        'MOBILE':     { icon:'📱', title:'Cheaper mobile plan found', provider:'iD Mobile via Uswitch', saving:'£96/yr', body:(co)=>`A SIM-only deal is cheaper than your ${co?`<strong>${co}</strong> `:''}plan.`, link:'https://www.uswitch.com/mobiles/', linkText:'View deal →' },
+        'MORTGAGE':   { icon:'🏠', title:'Remortgage deal available', provider:'HSBC via MoneySupermarket', saving:'£600/yr', body:()=>'Current fixed-rate deals are lower than your existing rate.', link:'https://www.moneysupermarket.com/mortgages/', linkText:'Compare rates →' },
+        'LOANS':      { icon:'🚙', title:'Lower car finance rate found', provider:'Zuto via Compare the Market', saving:'£240/yr', body:(co)=>`Refinancing your ${co?`<strong>${co}</strong> `:''}agreement could reduce your monthly payment.`, link:'https://www.comparethemarket.com/car-finance/', linkText:'Check eligibility →' },
+        'GROCERIES':  { icon:'🛒', title:'Cashback on grocery spend', provider:'TopCashback', saving:'£60/yr', body:()=>'Activate cashback on your regular supermarket to earn back automatically.', link:'https://www.topcashback.co.uk/supermarkets/', linkText:'Activate cashback →' },
+        'FUEL':       { icon:'⛽', title:'Fuel cashback card available', provider:'Motoring Club via AA', saving:'£80/yr', body:()=>'A fuel cashback card could save you money on every fill-up.', link:'https://www.theaa.com/breakdown-cover/motoring-club/', linkText:'View offer →' },
+        'DEBTS':      { icon:'💳', title:'0% balance transfer found', provider:'Barclaycard via MoneySupermarket', saving:'Varies', body:()=>'Transferring your balance to 0% could save you on interest charges.', link:'https://www.moneysupermarket.com/credit-cards/balance-transfer/', linkText:'Check eligibility →' }
     };
 
-    // Only show deals for categories the user actually has bills in
+    // Filter deal pool to only categories the user actually has bills in
     const matchedDeals = Object.entries(dealPool).filter(([cat]) => hasCategory(cat));
-
     const container = document.getElementById('deal-cards');
     const badge     = document.getElementById('scan-badge');
 
@@ -778,34 +775,24 @@ window.onload = function () {
         return;
     }
 
-    // Stagger deal cards in one by one to feel like a live scan
+    // Stagger each deal card by 600ms to simulate a live scanning effect
     matchedDeals.forEach(([cat, deal], i) => {
         setTimeout(() => {
-            const el = document.createElement('div');
+            const el = document.createElement('div'); // create card element in memory
             el.className = 'deal';
-            const co = getCompany(cat);
+            const co = getCompany(cat); // personalise text with the user's provider name
             el.innerHTML = `
-                <div class="deal-header">
-                    <span>${deal.icon}</span>
-                    <span class="deal-badge">Deal found</span>
-                    <span class="deal-title">${deal.title}</span>
-                </div>
-                <div class="deal-body">
-                    ${deal.body(co)}<br/>
-                    Potential saving: <span class="deal-saving">${deal.saving}</span>
-                    &nbsp;·&nbsp; ${deal.provider}
-                </div>
+                <div class="deal-header"><span>${deal.icon}</span><span class="deal-badge">Deal found</span><span class="deal-title">${deal.title}</span></div>
+                <div class="deal-body">${deal.body(co)}<br/>Potential saving: <span class="deal-saving">${deal.saving}</span> &nbsp;·&nbsp; ${deal.provider}</div>
                 <a class="deal-link" href="${deal.link}" target="_blank">${deal.linkText}</a>
             `;
-            container.appendChild(el);
-
-            // Update badge once all deals are shown
+            container.appendChild(el); // add card to the page
+            // Update badge text once the last deal has been added
             if (i === matchedDeals.length - 1) {
                 badge.innerHTML = `<span style="color:var(--green);font-size:11px;">✓ ${matchedDeals.length} deal${matchedDeals.length > 1 ? 's' : ''} found</span>`;
             }
-        }, 800 + i * 600); // stagger by 600ms per deal
+        }, 800 + i * 600); // delay = 800ms base + 600ms per deal
     });
-
 })();
 </script>
 

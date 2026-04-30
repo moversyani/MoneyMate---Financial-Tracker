@@ -10,6 +10,14 @@ from .models import Income, Expense, SavingsGoal
 from .forms import ExpenseForm, IncomeForm, SavingsGoalForm
 
 
+# --- Landing page ---
+# Shown at / — redirects logged-in users straight to the dashboard
+def landing(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'finance/landing.html')
+
+
 # --- Dashboard ---
 @login_required
 def dashboard(request):
@@ -39,7 +47,6 @@ def dashboard(request):
     total_expenses = sum(e.monthly_amount() for e in expenses)
     leftover       = total_income - total_expenses
 
-    # Savings intelligence benchmarks (monthly UK averages)
     benchmarks = {
         'UTILITIES':     Decimal('150.00'),
         'SUBSCRIPTIONS': Decimal('40.00'),
@@ -72,7 +79,6 @@ def dashboard(request):
                 'companies':        companies,
             })
 
-    # Fetch the user's savings goals for the dashboard summary card
     goals = SavingsGoal.objects.filter(user=request.user)
 
     context = {
@@ -84,7 +90,7 @@ def dashboard(request):
         'expense_form':    ExpenseForm(),
         'income_form':     IncomeForm(),
         'recommendations': recommendations,
-        'goals':           goals,  # passed to dashboard summary card
+        'goals':           goals,
     }
 
     return render(request, 'finance/dashboard.html', context)
@@ -97,12 +103,11 @@ def savings_goals(request):
     incomes  = Income.objects.filter(user=request.user)
     expenses = Expense.objects.filter(user=request.user)
 
-    # Calculate disposable income to auto-suggest monthly contribution
     total_income   = sum(i.amount for i in incomes)
     total_expenses = sum(e.monthly_amount() for e in expenses)
     leftover       = total_income - total_expenses
 
-    # Suggest 20% of disposable income as the default monthly contribution
+    # Suggest 20% of disposable income as the monthly contribution
     suggested_contribution = round(leftover * Decimal('0.20'), 2) if leftover > 0 else Decimal('0.00')
 
     if request.method == 'POST':
@@ -116,7 +121,6 @@ def savings_goals(request):
                 return redirect('savings_goals')
 
         elif 'add_contribution' in request.POST:
-            # User is adding money to an existing goal
             goal_id = request.POST.get('goal_id')
             amount  = request.POST.get('contribution_amount')
             goal    = get_object_or_404(SavingsGoal, pk=goal_id, user=request.user)
@@ -128,9 +132,7 @@ def savings_goals(request):
             return redirect('savings_goals')
 
     goals = SavingsGoal.objects.filter(user=request.user)
-
-    # Pre-fill the monthly contribution field with the suggested amount
-    form = SavingsGoalForm(initial={'monthly_contribution': suggested_contribution})
+    form  = SavingsGoalForm(initial={'monthly_contribution': suggested_contribution})
 
     context = {
         'goals':                  goals,
@@ -206,4 +208,4 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('landing')  # send back to landing page after logout
