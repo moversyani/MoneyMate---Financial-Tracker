@@ -1,0 +1,147 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}MoneyMate — Bills{% endblock %}
+{% block active_bills %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">Bills</div>
+<div class="page-sub">All your monthly bills. Total: <strong style="color:var(--red);">£{{ total_expenses }}</strong>/mo</div>
+
+<!-- CATEGORY FILTER PILLS -->
+<div class="filter-bar">
+    <!-- All bills — clears the filter -->
+    <a href="{% url 'bills_page' %}"
+       class="filter-pill {% if not category_filter %}active{% endif %}">
+        All
+    </a>
+    {% for code, name in categories %}
+        <a href="{% url 'bills_page' %}?category={{ code }}"
+           class="filter-pill {% if category_filter == code %}active{% endif %}">
+            {{ name }}
+        </a>
+    {% endfor %}
+</div>
+
+<div style="display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.6fr); gap:16px; align-items:start;">
+
+    <!-- ADD BILL FORM -->
+    <div class="card">
+        <div class="card-title">Add a New Bill</div>
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Category first — sets context before other fields -->
+            <p><label for="id_category">Category:</label>{{ form.category }}</p>
+            <p><label for="id_name">Name:</label>{{ form.name }}</p>
+            <p><label for="id_company">Company:</label>{{ form.company }}</p>
+
+            <!-- Amount + Frequency side by side -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <p style="margin:0;"><label for="id_amount">Amount (£):</label>{{ form.amount }}</p>
+                <p style="margin:0;"><label for="id_frequency">Frequency:</label>{{ form.frequency }}</p>
+            </div>
+
+            <p><label for="id_bill_type">Bill type:</label>{{ form.bill_type }}</p>
+
+            <!-- Collapsible advanced details section -->
+            <div style="margin-top:4px;margin-bottom:12px;">
+                <button type="button" class="adv-toggle" onclick="
+                    const body = this.nextElementSibling;
+                    body.style.display = body.style.display === 'block' ? 'none' : 'block';
+                    this.textContent = body.style.display === 'block' ? '− Hide advanced details' : '+ Advanced details';
+                ">+ Advanced details</button>
+                <div class="adv-body">
+                    <div class="field"><label>Customer / policy number:</label>{{ form.customer_number }}</div>
+                    <div class="field"><label>Tariff / policy details:</label>{{ form.tariff_details }}</div>
+                    <div class="adv-grid">
+                        <div class="field"><label>Start date:</label>{{ form.start_date }}</div>
+                        <div class="field"><label>End date:</label>{{ form.end_date }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-blue">+ Save Bill</button>
+        </form>
+    </div>
+
+    <!-- BILLS LIST -->
+    <div class="card">
+        <div class="card-title">
+            {% if category_filter %}
+                <!-- Show which category is being filtered -->
+                {% for code, name in categories %}{% if code == category_filter %}{{ name }}{% endif %}{% endfor %}
+            {% else %}
+                All Bills
+            {% endif %}
+            <span class="pill">{{ expenses|length }} bill{{ expenses|length|pluralize }}</span>
+        </div>
+
+        {% if expenses %}
+            <!-- Each row is clickable and expands to show advanced details -->
+            {% for expense in expenses %}
+                <div class="bill-row" onclick="
+                    const details = document.getElementById('details-{{ expense.pk }}');
+                    const chevron = this.querySelector('.bill-chevron');
+                    details.classList.toggle('open');
+                    chevron.classList.toggle('open');
+                ">
+                    <!-- hsl colour shifts 40° per bill for unique dot colours -->
+                    <div class="dot" style="background: hsl({{ forloop.counter0 }}40, 70%, 60%);"></div>
+                    <div class="item-info">
+                        <div class="item-name">
+                            {{ expense.name }}
+                            {% if expense.company %}
+                                <span style="font-size:10px;font-weight:500;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;vertical-align:middle;">
+                                    {{ expense.company }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="item-cat">
+                            {{ expense.get_category_display }}
+                            {% if expense.frequency == 'ANNUALLY' %}
+                                <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);margin-left:4px;">Annual</span>
+                            {% endif %}
+                            {% if expense.bill_type == 'VARIABLE' %}
+                                <span style="font-size:10px;padding:1px 6px;border-radius:var(--pill);background:rgba(251,191,36,0.12);color:var(--amber);border:1px solid rgba(251,191,36,0.25);margin-left:4px;">Variable</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <div class="item-amt">£{{ expense.amount }}</div>
+                        {% if expense.frequency == 'ANNUALLY' %}
+                            <div style="font-size:10px;color:var(--text-3);">£{{ expense.monthly_amount|floatformat:2 }}/mo</div>
+                        {% endif %}
+                    </div>
+                    <span class="bill-chevron">▼</span>
+                    <!-- stopPropagation prevents delete triggering the expand -->
+                    <a href="{% url 'delete_expense' expense.pk %}" class="btn-del" onclick="event.stopPropagation(); return confirm('Delete this bill?')">×</a>
+                </div>
+
+                <!-- Expandable details panel — id used by onclick above -->
+                <div class="bill-details" id="details-{{ expense.pk }}">
+                    <div class="bill-details-grid">
+                        <div><div class="bd-label">Bill type</div><div class="bd-value">{{ expense.get_bill_type_display }}</div></div>
+                        <div><div class="bd-label">Frequency</div><div class="bd-value">{{ expense.get_frequency_display }}</div></div>
+                        {% if expense.customer_number %}<div><div class="bd-label">Customer / policy no.</div><div class="bd-value">{{ expense.customer_number }}</div></div>{% endif %}
+                        {% if expense.tariff_details %}<div><div class="bd-label">Tariff / policy</div><div class="bd-value">{{ expense.tariff_details }}</div></div>{% endif %}
+                        {% if expense.start_date %}<div><div class="bd-label">Start date</div><div class="bd-value">{{ expense.start_date }}</div></div>{% endif %}
+                        {% if expense.end_date %}<div><div class="bd-label">End date</div><div class="bd-value">{{ expense.end_date }}</div></div>{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Total summary -->
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:var(--text-3);">Total monthly bills</span>
+                <span style="font-size:18px;font-weight:500;color:var(--red);">£{{ total_expenses }}</span>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span>🧾</span>
+                {% if category_filter %}No bills in this category.{% else %}No bills added yet.{% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

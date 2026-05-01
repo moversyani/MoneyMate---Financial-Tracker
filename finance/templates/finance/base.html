@@ -1,0 +1,296 @@
+<!-- base.html — MoneyMate shared layout
+     All pages extend this using: extends 'finance/base.html'
+     Child pages fill block content, block title, and block active_X -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}MoneyMate{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+        /* --- Reset: removes default browser margin/padding --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* --- Design tokens: shared CSS variables used across all pages --- */
+        :root {
+            --green:       #10b981;
+            --green-dark:  #059669;
+            --green-dim:   rgba(16,185,129,0.12);
+            --bg-page:     #0f1117;
+            --bg-card:     #1a1d27;
+            --bg-input:    #21253a;
+            --bg-bar:      #13151f;
+            --text-1:      #e8eaf0;
+            --text-2:      #8b92a8;
+            --text-3:      #555c72;
+            --border:      rgba(255,255,255,0.07);
+            --red:         #f87171;
+            --red-dim:     rgba(248,113,113,0.12);
+            --blue:        #60a5fa;
+            --amber:       #fbbf24;
+            --amber-dim:   rgba(251,191,36,0.10);
+            --amber-bdr:   rgba(251,191,36,0.25);
+            --sidebar-w:   220px;
+            --topbar-h:    56px;
+            --r:           12px;
+            --r-sm:        8px;
+            --pill:        100px;
+        }
+
+        /* --- Base page styles --- */
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-page); color: var(--text-1); min-height: 100vh; }
+
+        /* --- Topbar: fixed across the top, z-index keeps it above all content --- */
+        .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 300; height: var(--topbar-h); background: var(--bg-bar); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+        .topbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: var(--text-1); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .topbar-month { font-size: 12px; color: var(--text-3); background: var(--bg-input); padding: 4px 12px; border-radius: var(--pill); border: 1px solid var(--border); }
+        .topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+        /* Avatar circle shows first letter of the username */
+        .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green); }
+        .topbar-logout { font-size: 12px; color: var(--text-3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
+        .topbar-logout:hover { color: var(--text-1); border-color: rgba(255,255,255,0.25); }
+
+        /* --- Layout: flex row so sidebar and main sit side by side --- */
+        .app-body { display: flex; padding-top: var(--topbar-h); min-height: 100vh; }
+
+        /* --- Sidebar: fixed left panel, top offset matches topbar height --- */
+        .sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; position: fixed; top: var(--topbar-h); bottom: 0; left: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+        .sb-section { padding: 16px 18px 5px; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+        .sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 13px; color: var(--text-2); text-decoration: none; border-left: 2px solid transparent; transition: background 0.15s, color 0.15s; }
+        .sb-item:hover { background: var(--bg-input); color: var(--text-1); }
+        /* Active state: green left border highlights the current page */
+        .sb-item.active { background: var(--green-dim); color: var(--green); border-left-color: var(--green); font-weight: 500; }
+        .sb-icon { font-size: 14px; width: 18px; text-align: center; }
+
+        /* --- Main content area: offset left by sidebar width --- */
+        .main { margin-left: var(--sidebar-w); flex: 1; padding: 24px; max-width: 1200px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        .page-sub { font-size: 13px; color: var(--text-3); margin-bottom: 24px; }
+
+        /* --- Card: dark rounded container used for every content block --- */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; }
+        .card-title { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: var(--pill); background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+
+        /* --- Forms: .field class used on pages that don't use Django's form.as_p --- */
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+        .field input, .field select { width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s; }
+        .field input::placeholder { color: var(--text-3); }
+        .field input:focus, .field select:focus { border-color: var(--green); }
+
+        /* --- Forms: styles Django's {{ form.as_p }} output --- */
+        form p { margin-bottom: 12px; }
+        form p label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+        form p input, form p select { width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s; }
+        form p input:focus, form p select:focus { border-color: var(--green); }
+        /* Custom dropdown arrow via inline SVG background image */
+        form p select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b92a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+        form p select option { background: var(--bg-input); color: var(--text-1); }
+
+        /* --- Shared button base: full-width pill shape --- */
+        .btn { width: 100%; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: #fff; border: none; border-radius: var(--pill); cursor: pointer; transition: filter 0.2s, transform 0.15s; }
+        .btn:hover { filter: brightness(0.88); transform: translateY(-1px); }
+        .btn-green { background: var(--green); }
+        .btn-blue  { background: #3b82f6; }
+        .btn-sm { width: auto; padding: 6px 16px; font-size: 13px; }
+
+        /* --- List items: shared across income, bills and other list pages --- */
+        .item-list { list-style: none; padding: 0; margin-top: 14px; }
+        .item-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .item-list li:last-child { border-bottom: none; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .item-info { flex: 1; }
+        .item-name { font-weight: 500; color: var(--text-1); }
+        .item-cat  { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+        .item-amt  { font-weight: 500; flex-shrink: 0; }
+        /* Delete button turns red on hover */
+        .btn-del { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px; flex-shrink: 0; transition: color 0.2s, border-color 0.2s, background 0.2s; }
+        .btn-del:hover { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+        .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+        /* --- Stat boxes: 3-column summary used on compare pages --- */
+        .stat-boxes { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
+        .stat-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .stat-val { font-size: 22px; font-weight: 500; }
+        .stat-val.g { color: var(--green); }
+        .stat-val.r { color: var(--red); }
+        .stat-val.b { color: var(--blue); }
+        .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+
+        /* --- Deal cards: used on compare & save pages --- */
+        .deal-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 22px; margin-bottom: 14px; display: flex; align-items: center; gap: 16px; transition: border-color 0.2s; }
+        .deal-card:hover { border-color: rgba(16,185,129,0.3); }
+        .deal-card-icon { font-size: 28px; flex-shrink: 0; }
+        .deal-card-info { flex: 1; }
+        .deal-card-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+        .deal-card-body { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+        .deal-card-saving { font-size: 13px; font-weight: 500; color: var(--green); margin-top: 4px; }
+        .deal-card-link { font-size: 13px; color: var(--blue); font-weight: 500; text-decoration: none; padding: 8px 18px; border-radius: var(--pill); border: 1px solid rgba(96,165,250,0.3); white-space: nowrap; flex-shrink: 0; transition: background 0.2s; }
+        .deal-card-link:hover { background: rgba(96,165,250,0.1); }
+
+        /* --- Filter pills: category filter bar on the bills page --- */
+        .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-pill { font-size: 12px; padding: 4px 12px; border-radius: var(--pill); border: 1px solid var(--border); color: var(--text-2); text-decoration: none; transition: all 0.15s; }
+        .filter-pill:hover { border-color: var(--green); color: var(--green); }
+        .filter-pill.active { background: var(--green-dim); color: var(--green); border-color: rgba(16,185,129,0.3); }
+
+        /* --- Bill expandable rows: clickable rows that reveal advanced details --- */
+        .bill-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); }
+        .bill-row:last-child { border-bottom: none; }
+        .bill-row:hover .item-name { color: var(--green); }
+        /* Chevron rotates 180° when row is expanded */
+        .bill-chevron { font-size: 10px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
+        .bill-chevron.open { transform: rotate(180deg); }
+        /* Details panel: hidden until row is clicked */
+        .bill-details { display: none; padding: 10px 12px 14px 24px; background: var(--bg-input); border-radius: var(--r-sm); margin-bottom: 4px; font-size: 12px; color: var(--text-2); }
+        .bill-details.open { display: block; }
+        .bill-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+        .bd-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .bd-value { font-size: 12px; color: var(--text-1); }
+
+        /* --- Advanced details toggle inside the bill form --- */
+        .adv-toggle { background: none; border: none; color: var(--text-3); font-size: 12px; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif; margin-bottom: 10px; }
+        .adv-toggle:hover { color: var(--text-2); }
+        /* Hidden by default — JS toggles display on click */
+        .adv-body { display: none; padding: 14px; background: var(--bg-input); border-radius: var(--r-sm); border: 1px solid var(--border); margin-bottom: 12px; }
+        .adv-body .field { margin-bottom: 12px; }
+        .adv-body .field:last-child { margin-bottom: 0; }
+        .adv-body label { display: block; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+        .adv-body input { width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--r-sm); color: var(--text-1); outline: none; transition: border-color 0.2s; }
+        .adv-body input:focus { border-color: var(--green); }
+        .adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* --- Empty state: shown when a list has no records yet --- */
+        .empty-state { text-align: center; padding: 48px 20px; color: var(--text-3); font-size: 14px; }
+        .empty-state span { font-size: 32px; display: block; margin-bottom: 12px; }
+
+        /* --- Pulse animation: used on the page loader logo --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+        /* Page loader covers the screen until window.onload fires */
+        #page-loader { position: fixed; inset: 0; z-index: 9999; background: var(--bg-page); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; transition: opacity 0.3s; }
+        #page-loader.hidden { opacity: 0; pointer-events: none; }
+        .loader-logo { animation: pulse 1.2s ease-in-out infinite; }
+        .loader-text { font-size: 13px; color: var(--text-3); font-family: 'DM Sans', sans-serif; }
+
+        /* --- Slim custom scrollbar --- */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR: fixed bar with logo, month badge, username avatar and logout -->
+<header class="topbar">
+    <a href="{% url 'dashboard' %}" class="topbar-brand">
+        <!-- Inline SVG logo — no external file needed -->
+        <svg height="58" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <defs>
+                <linearGradient id="tblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                <linearGradient id="tgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                <linearGradient id="tarrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+            </defs>
+            <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#tblue)"/>
+            <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#tblue)"/>
+            <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#tgreen)"/>
+            <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#tgreen)"/>
+            <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+            <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#tarrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <polygon points="44,13 54,17 47,24" fill="url(#tarrow)"/>
+            <text x="64" y="36" font-family="'Arial Black',sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+            <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+        </svg>
+    </a>
+    <div class="topbar-right">
+        <span class="topbar-month">April 2026</span>
+        <div class="topbar-user">
+            <!-- slice:":1"|upper takes the first letter of username and uppercases it -->
+            <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
+            {{ user.username }}
+        </div>
+        <a href="{% url 'logout' %}" class="topbar-logout">Log out</a>
+    </div>
+</header>
+
+<div class="app-body">
+
+    <!-- SIDEBAR: fixed left nav — block active_X lets child pages highlight their link -->
+    <nav class="sidebar">
+        <div class="sb-section">Overview</div>
+        <a href="{% url 'dashboard' %}" class="sb-item {% block active_dashboard %}{% endblock %}">
+            <span class="sb-icon">📊</span> Dashboard
+        </a>
+
+        <div class="sb-section">Finances</div>
+        <a href="{% url 'income_page' %}" class="sb-item {% block active_income %}{% endblock %}">
+            <span class="sb-icon">💷</span> Income
+        </a>
+        <a href="{% url 'bills_page' %}" class="sb-item {% block active_bills %}{% endblock %}">
+            <span class="sb-icon">🧾</span> Bills
+        </a>
+        <a href="{% url 'savings_goals' %}" class="sb-item {% block active_savings %}{% endblock %}">
+            <span class="sb-icon">🎯</span> Savings Goals
+        </a>
+
+        <div class="sb-section">Compare &amp; Save</div>
+        <a href="{% url 'compare_insurance' %}" class="sb-item {% block active_insurance %}{% endblock %}">
+            <span class="sb-icon">🚗</span> Car Insurance
+        </a>
+        <a href="{% url 'compare_energy' %}" class="sb-item {% block active_energy %}{% endblock %}">
+            <span class="sb-icon">⚡</span> Energy
+        </a>
+        <a href="{% url 'compare_broadband' %}" class="sb-item {% block active_broadband %}{% endblock %}">
+            <span class="sb-icon">📡</span> Broadband
+        </a>
+        <a href="{% url 'compare_home' %}" class="sb-item {% block active_home %}{% endblock %}">
+            <span class="sb-icon">🏠</span> Home Insurance
+        </a>
+    </nav>
+
+    <!-- MAIN CONTENT: filled by each child template's block content -->
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<!-- PAGE LOADER: pulsing logo shown while the page loads, removed by window.onload -->
+<div id="page-loader">
+    <div class="loader-logo">
+        <svg height="80" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="lblue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                <linearGradient id="lgreen" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                <linearGradient id="larrow" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+            </defs>
+            <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#lblue)"/>
+            <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#lblue)"/>
+            <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#lgreen)"/>
+            <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#lgreen)"/>
+            <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+            <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#larrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <polygon points="44,13 54,17 47,24" fill="url(#larrow)"/>
+            <text x="64" y="36" font-family="Arial Black,sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+            <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+        </svg>
+    </div>
+    <div class="loader-text">Loading MoneyMate...</div>
+</div>
+
+<script>
+    // Hide the page loader once everything has rendered
+    window.onload = function () {
+        const loader = document.getElementById('page-loader');
+        if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); }
+    };
+</script>
+
+</body>
+</html>

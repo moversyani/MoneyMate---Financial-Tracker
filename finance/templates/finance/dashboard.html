@@ -280,7 +280,7 @@
 
 <div class="app-body">
 
-    <!-- SIDEBAR: fixed left nav — active class highlights the current page -->
+    <!-- SIDEBAR — all links now wired to their real URLs -->
     <nav class="sidebar">
         <div class="sb-section">Overview</div>
         <a href="{% url 'dashboard' %}" class="sb-item active">
@@ -288,17 +288,17 @@
         </a>
 
         <div class="sb-section">Finances</div>
-        <a href="#" class="sb-item"><span class="sb-icon">💷</span> Income</a>
-        <a href="#" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
+        <a href="{% url 'income_page' %}" class="sb-item"><span class="sb-icon">💷</span> Income</a>
+        <a href="{% url 'bills_page' %}" class="sb-item"><span class="sb-icon">🧾</span> Bills</a>
         <a href="{% url 'savings_goals' %}" class="sb-item">
             <span class="sb-icon">🎯</span> Savings Goals
         </a>
 
         <div class="sb-section">Compare &amp; Save</div>
-        <a href="#" class="sb-item"><span class="sb-icon">🚗</span> Car Insurance</a>
-        <a href="#" class="sb-item"><span class="sb-icon">⚡</span> Energy</a>
-        <a href="#" class="sb-item"><span class="sb-icon">📡</span> Broadband</a>
-        <a href="#" class="sb-item"><span class="sb-icon">🏠</span> Home Insurance</a>
+        <a href="{% url 'compare_insurance' %}" class="sb-item"><span class="sb-icon">🚗</span> Car Insurance</a>
+        <a href="{% url 'compare_energy' %}" class="sb-item"><span class="sb-icon">⚡</span> Energy</a>
+        <a href="{% url 'compare_broadband' %}" class="sb-item"><span class="sb-icon">📡</span> Broadband</a>
+        <a href="{% url 'compare_home' %}" class="sb-item"><span class="sb-icon">🏠</span> Home Insurance</a>
     </nav>
 
     <!-- MAIN CONTENT -->

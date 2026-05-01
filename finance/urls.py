@@ -4,19 +4,29 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Landing page — shown to logged-out users, redirects to dashboard if logged in
+    # Landing page
     path('', views.landing, name='landing'),
 
-    # Main dashboard — requires login
+    # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
 
-    # Bill and income delete routes
+    # Finances sidebar pages
+    path('income/', views.income_page, name='income_page'),
+    path('bills/', views.bills_page, name='bills_page'),
+
+    # Bill and income delete — HTTP_REFERER sends user back to whichever page they came from
     path('delete/<int:pk>/', views.delete_expense, name='delete_expense'),
     path('delete-income/<int:pk>/', views.delete_income, name='delete_income'),
 
     # Savings goals
     path('savings/', views.savings_goals, name='savings_goals'),
     path('savings/delete/<int:pk>/', views.delete_goal, name='delete_goal'),
+
+    # Compare & Save pages
+    path('compare/insurance/', views.compare_insurance, name='compare_insurance'),
+    path('compare/energy/', views.compare_energy, name='compare_energy'),
+    path('compare/broadband/', views.compare_broadband, name='compare_broadband'),
+    path('compare/home/', views.compare_home, name='compare_home'),
 
     # Auth routes
     path('login/', views.login_view, name='login'),

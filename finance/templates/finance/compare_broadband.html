@@ -1,0 +1,82 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}MoneyMate — Broadband{% endblock %}
+{% block active_broadband %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">📡 Broadband</div>
+<div class="page-sub">Find a faster or cheaper broadband deal in your area.</div>
+
+<div class="stat-boxes">
+    <div class="stat-box">
+        <div class="stat-label">You currently spend</div>
+        <div class="stat-val r">£{{ total_spent }}/mo</div>
+        <div class="stat-sub">Across {{ bills|length }} subscription{{ bills|length|pluralize }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">UK market average</div>
+        <div class="stat-val">£{{ benchmark }}/mo</div>
+        <div class="stat-sub">For broadband &amp; subscriptions</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Potential saving</div>
+        {% if total_spent > benchmark %}
+            <div class="stat-val g">£{{ total_spent|add:"-40" }}/mo</div>
+            <div class="stat-sub">You may be overpaying</div>
+        {% else %}
+            <div class="stat-val g">—</div>
+            <div class="stat-sub">Your spend looks healthy</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if bills %}
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Your Subscription Bills</div>
+        <ul class="item-list">
+            {% for bill in bills %}
+                <li>
+                    <div class="dot" style="background:var(--blue);"></div>
+                    <div class="item-info">
+                        <div class="item-name">{{ bill.name }}{% if bill.company %} <span style="font-size:10px;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;">{{ bill.company }}</span>{% endif %}</div>
+                        <div class="item-cat">{{ bill.get_frequency_display }}</div>
+                    </div>
+                    <span class="item-amt">£{{ bill.amount }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="card-title" style="margin-bottom:12px;">Available Deals</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🔄</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Uswitch — Broadband Comparison</div>
+        <div class="deal-card-body">Compare broadband, TV and phone packages from all major UK providers. Filter by speed, price and contract length.</div>
+        <div class="deal-card-saving">Avg saving: £96/yr by switching provider</div>
+    </div>
+    <a class="deal-card-link" href="https://www.uswitch.com/broadband/" target="_blank">Compare →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🔍</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">MoneySupermarket — Broadband</div>
+        <div class="deal-card-body">Enter your postcode to see all available broadband deals in your area. Compare speeds, prices and contract terms side by side.</div>
+        <div class="deal-card-saving">Find deals from £18/mo</div>
+    </div>
+    <a class="deal-card-link" href="https://www.moneysupermarket.com/broadband/" target="_blank">Compare →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">⚡</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Which? — Broadband Guide</div>
+        <div class="deal-card-body">Independent reviews and speed tests for all major UK broadband providers. Find out who offers the best value and reliability.</div>
+        <div class="deal-card-saving">Independent expert reviews</div>
+    </div>
+    <a class="deal-card-link" href="https://www.which.co.uk/reviews/broadband" target="_blank">Read reviews →</a>
+</div>
+{% endblock %}

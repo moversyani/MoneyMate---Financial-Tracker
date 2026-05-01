@@ -1,0 +1,85 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}MoneyMate — Car Insurance{% endblock %}
+{% block active_insurance %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">🚗 Car Insurance</div>
+<div class="page-sub">Compare car insurance deals based on your current spending.</div>
+
+<!-- STAT BOXES -->
+<div class="stat-boxes">
+    <div class="stat-box">
+        <div class="stat-label">You currently spend</div>
+        <div class="stat-val r">£{{ total_spent }}/mo</div>
+        <div class="stat-sub">Across {{ bills|length }} insurance bill{{ bills|length|pluralize }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">UK market average</div>
+        <div class="stat-val">£{{ benchmark }}/mo</div>
+        <div class="stat-sub">Based on UK insurance data</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Potential saving</div>
+        {% if total_spent > benchmark %}
+            <div class="stat-val g">£{{ total_spent|add:"-120" }}/mo</div>
+            <div class="stat-sub">You may be overpaying</div>
+        {% else %}
+            <div class="stat-val g">—</div>
+            <div class="stat-sub">Your spend looks healthy</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- YOUR INSURANCE BILLS -->
+{% if bills %}
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Your Insurance Bills</div>
+        <ul class="item-list">
+            {% for bill in bills %}
+                <li>
+                    <div class="dot" style="background:var(--blue);"></div>
+                    <div class="item-info">
+                        <div class="item-name">{{ bill.name }}{% if bill.company %} <span style="font-size:10px;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;">{{ bill.company }}</span>{% endif %}</div>
+                        <div class="item-cat">{{ bill.get_frequency_display }}</div>
+                    </div>
+                    <span class="item-amt">£{{ bill.amount }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<!-- COMPARISON DEALS -->
+<div class="card-title" style="margin-bottom:12px;">Available Deals</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🏆</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">MoneySupermarket — Car Insurance</div>
+        <div class="deal-card-body">Compare hundreds of car insurance policies in minutes. Find the cheapest quote for your vehicle and driving history.</div>
+        <div class="deal-card-saving">Avg saving: £312/yr vs current providers</div>
+    </div>
+    <a class="deal-card-link" href="https://www.moneysupermarket.com/car-insurance/" target="_blank">Compare →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🔍</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Compare the Market — Car Insurance</div>
+        <div class="deal-card-body">Get quotes from over 100 insurers. Compare comprehensive, third party fire &amp; theft, and third party policies.</div>
+        <div class="deal-card-saving">Free to compare — no obligation</div>
+    </div>
+    <a class="deal-card-link" href="https://www.comparethemarket.com/car-insurance/" target="_blank">Compare →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">⚡</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Go Compare — Car Insurance</div>
+        <div class="deal-card-body">Run a quick comparison to see if you can get the same level of cover for less. Takes under 5 minutes.</div>
+        <div class="deal-card-saving">Trusted by millions of UK drivers</div>
+    </div>
+    <a class="deal-card-link" href="https://www.gocompare.com/car-insurance/" target="_blank">Compare →</a>
+</div>
+{% endblock %}

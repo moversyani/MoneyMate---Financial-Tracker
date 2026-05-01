@@ -1,0 +1,58 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}MoneyMate — Income{% endblock %}
+{% block active_income %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">Income</div>
+<div class="page-sub">Manage all your income sources. Total: <strong style="color:var(--green);">£{{ total_income }}</strong>/mo</div>
+
+<div style="display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.6fr); gap:16px; align-items:start;">
+
+    <!-- ADD INCOME FORM -->
+    <div class="card">
+        <div class="card-title">Add Income Source</div>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-green">+ Add Income</button>
+        </form>
+    </div>
+
+    <!-- INCOME LIST -->
+    <div class="card">
+        <div class="card-title">
+            Your Income Sources
+            <span class="pill">{{ incomes|length }} source{{ incomes|length|pluralize }}</span>
+        </div>
+
+        {% if incomes %}
+            <ul class="item-list">
+                {% for inc in incomes %}
+                    <li>
+                        <div class="dot" style="background: var(--green);"></div>
+                        <div class="item-info">
+                            <div class="item-name">{{ inc.source }}</div>
+                            <div class="item-cat">Added {{ inc.date_added|date:"d M Y" }}</div>
+                        </div>
+                        <span class="item-amt" style="color:var(--green);">£{{ inc.amount }}/mo</span>
+                        <a href="{% url 'delete_income' inc.pk %}" class="btn-del" onclick="return confirm('Delete this income?')">×</a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Total summary below the list -->
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:var(--text-3);">Total monthly income</span>
+                <span style="font-size:18px;font-weight:500;color:var(--green);">£{{ total_income }}</span>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span>💷</span>
+                No income sources added yet.<br />Add your first one using the form.
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

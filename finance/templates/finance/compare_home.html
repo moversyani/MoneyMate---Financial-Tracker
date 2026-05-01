@@ -1,0 +1,82 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}MoneyMate — Home Insurance{% endblock %}
+{% block active_home %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">🏠 Home Insurance</div>
+<div class="page-sub">Compare buildings and contents insurance to make sure you're not overpaying.</div>
+
+<div class="stat-boxes">
+    <div class="stat-box">
+        <div class="stat-label">You currently spend</div>
+        <div class="stat-val r">£{{ total_spent }}/mo</div>
+        <div class="stat-sub">Across {{ bills|length }} insurance bill{{ bills|length|pluralize }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">UK market average</div>
+        <div class="stat-val">£{{ benchmark }}/mo</div>
+        <div class="stat-sub">For home insurance</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Potential saving</div>
+        {% if total_spent > benchmark %}
+            <div class="stat-val g">£{{ total_spent|add:"-120" }}/mo</div>
+            <div class="stat-sub">You may be overpaying</div>
+        {% else %}
+            <div class="stat-val g">—</div>
+            <div class="stat-sub">Your spend looks healthy</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if bills %}
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Your Insurance Bills</div>
+        <ul class="item-list">
+            {% for bill in bills %}
+                <li>
+                    <div class="dot" style="background:var(--green);"></div>
+                    <div class="item-info">
+                        <div class="item-name">{{ bill.name }}{% if bill.company %} <span style="font-size:10px;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;">{{ bill.company }}</span>{% endif %}</div>
+                        <div class="item-cat">{{ bill.get_frequency_display }}</div>
+                    </div>
+                    <span class="item-amt">£{{ bill.amount }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="card-title" style="margin-bottom:12px;">Available Deals</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🔍</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Compare the Market — Home Insurance</div>
+        <div class="deal-card-body">Compare buildings and contents insurance policies from leading UK insurers. Takes around 5 minutes to get quotes.</div>
+        <div class="deal-card-saving">Compare over 50 providers instantly</div>
+    </div>
+    <a class="deal-card-link" href="https://www.comparethemarket.com/home-insurance/" target="_blank">Compare →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🏆</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">MoneySupermarket — Home Insurance</div>
+        <div class="deal-card-body">Find the right level of cover for your home and belongings. Compare quotes for buildings, contents or combined policies.</div>
+        <div class="deal-card-saving">Avg saving: £150/yr vs auto-renewal</div>
+    </div>
+    <a class="deal-card-link" href="https://www.moneysupermarket.com/home-insurance/" target="_blank">Compare →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">⚡</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Go Compare — Home Insurance</div>
+        <div class="deal-card-body">Quick home insurance comparison with clear breakdowns of what each policy covers. No jargon, just clear pricing.</div>
+        <div class="deal-card-saving">Free quotes in under 5 minutes</div>
+    </div>
+    <a class="deal-card-link" href="https://www.gocompare.com/home-insurance/" target="_blank">Compare →</a>
+</div>
+{% endblock %}

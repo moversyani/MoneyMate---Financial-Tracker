@@ -1,0 +1,82 @@
+{% extends 'finance/base.html' %}
+
+{% block title %}MoneyMate — Energy{% endblock %}
+{% block active_energy %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">⚡ Energy Tariffs</div>
+<div class="page-sub">Compare energy deals based on your current utility spend.</div>
+
+<div class="stat-boxes">
+    <div class="stat-box">
+        <div class="stat-label">You currently spend</div>
+        <div class="stat-val r">£{{ total_spent }}/mo</div>
+        <div class="stat-sub">Across {{ bills|length }} utility bill{{ bills|length|pluralize }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Ofgem price cap avg</div>
+        <div class="stat-val">£{{ benchmark }}/mo</div>
+        <div class="stat-sub">UK household average</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-label">Potential saving</div>
+        {% if total_spent > benchmark %}
+            <div class="stat-val g">£{{ total_spent|add:"-150" }}/mo</div>
+            <div class="stat-sub">You may be overpaying</div>
+        {% else %}
+            <div class="stat-val g">—</div>
+            <div class="stat-sub">Your spend looks healthy</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if bills %}
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Your Utility Bills</div>
+        <ul class="item-list">
+            {% for bill in bills %}
+                <li>
+                    <div class="dot" style="background:var(--amber);"></div>
+                    <div class="item-info">
+                        <div class="item-name">{{ bill.name }}{% if bill.company %} <span style="font-size:10px;padding:1px 7px;border-radius:var(--pill);background:var(--bg-input);color:var(--text-2);border:1px solid var(--border);margin-left:6px;">{{ bill.company }}</span>{% endif %}</div>
+                        <div class="item-cat">{{ bill.get_frequency_display }}</div>
+                    </div>
+                    <span class="item-amt">£{{ bill.amount }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="card-title" style="margin-bottom:12px;">Available Deals</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🏛️</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Ofgem — Price Cap Checker</div>
+        <div class="deal-card-body">Check if the current energy price cap applies to your tariff and find out if you're on a fair deal using official government data.</div>
+        <div class="deal-card-saving">Official UK government energy data</div>
+    </div>
+    <a class="deal-card-link" href="https://www.ofgem.gov.uk/check-if-energy-price-cap-affects-you" target="_blank">Check tariff →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🐙</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Octopus Energy</div>
+        <div class="deal-card-body">One of the UK's top-rated energy suppliers. Known for competitive tariffs, green energy options, and excellent customer service.</div>
+        <div class="deal-card-saving">Avg saving: £180/yr vs standard tariffs</div>
+    </div>
+    <a class="deal-card-link" href="https://octopus.energy/" target="_blank">Get a quote →</a>
+</div>
+
+<div class="deal-card">
+    <div class="deal-card-icon">🔄</div>
+    <div class="deal-card-info">
+        <div class="deal-card-title">Uswitch — Energy Comparison</div>
+        <div class="deal-card-body">Compare gas and electricity tariffs from all major UK suppliers. Enter your postcode and usage to find the cheapest deal available.</div>
+        <div class="deal-card-saving">Free to compare — switch in minutes</div>
+    </div>
+    <a class="deal-card-link" href="https://www.uswitch.com/gas-electricity/" target="_blank">Compare →</a>
+</div>
+{% endblock %}
