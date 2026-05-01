@@ -1,7 +1,4 @@
-<!-- dashboard.html — MoneyMate Dashboard (Dark Theme)
-     Context from views.py: total_income, total_expenses, leftover,
-     incomes, expenses, recommendations, income_form, expense_form, goals -->
-
+<!-- dashboard.html — MoneyMate Dashboard (Dark Theme) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -268,7 +265,13 @@
         </svg>
     </a>
     <div class="topbar-right">
-        <span class="topbar-month">April 2026</span>
+        <!-- DYNAMIC TOPBAR MONTH NAVIGATION -->
+            <div class="topbar-month" style="display: flex; align-items: center; gap: 12px; padding: 4px 12px;">
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" style="color: var(--text-3); text-decoration: none; font-size: 10px;">◀</a>
+                <span style="color: var(--text-1); font-weight: 500; min-width: 80px; text-align: center;">{{ month_name }} {{ year }}</span>
+                <a href="?month={{ next_month }}&year={{ next_year }}" style="color: var(--text-3); text-decoration: none; font-size: 10px;">▶</a>
+            </div>
+        
         <div class="topbar-user">
             <!-- slice:":1"|upper takes first letter of username and uppercases it -->
             <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
@@ -519,6 +522,15 @@
                             <label for="id_category">Category:</label>
                             {{ expense_form.category }}
                         </p>
+
+                        <!-- Sub-type row: hidden by default, shown by JS when category has sub-types -->
+                            <div id="sub-type-row" style="display:none; margin-bottom:12px;">
+                                <p style="margin:0;">
+                                    <label for="id_sub_type">Type:</label>
+                                    {{ expense_form.sub_type }}
+                                </p>
+                            </div>
+
                         <p>
                             <label for="id_name">Name:</label>
                             {{ expense_form.name }}
@@ -737,8 +749,7 @@ function showBars() {
     <div class="loader-text">Loading MoneyMate...</div>
 </div>
 
-<!-- DEAL SCANNER: checks user's bills against a simulated deal database
-     In production each dealPool entry would be replaced with a live API call -->
+<!-- DEAL SCANNER: checks user's bills against a simulated deal database -->
 <script>
 (function () {
     // Django injects the user's bill data into this array at render time
@@ -794,6 +805,63 @@ function showBars() {
         }, 800 + i * 600); // delay = 800ms base + 600ms per deal
     });
 })();
+</script>
+
+<!-- SUB-TYPE DROPDOWN SCRIPT -->
+<script>
+const subTypeMap = {
+    'INSURANCE': [
+        ['INS_CAR','Car Insurance'],['INS_HOME','Home Insurance'],['INS_LIFE','Life Insurance'],
+        ['INS_HEALTH','Health Insurance'],['INS_TRAVEL','Travel Insurance'],
+        ['INS_PET','Pet Insurance'],['INS_OTHER','Other Insurance'],
+    ],
+    'LOANS': [
+        ['LOAN_PERSONAL','Personal Loan'],['LOAN_CAR','Car Finance'],
+        ['LOAN_STUDENT','Student Loan'],['LOAN_PAYDAY','Payday Loan'],
+        ['LOAN_OTHER','Other Loan'],
+    ],
+    'DEBTS': [
+        ['DEBT_CREDIT','Credit Card'],['DEBT_OVERDRAFT','Overdraft'],
+        ['DEBT_BNPL','Buy Now Pay Later'],['DEBT_OTHER','Other Debt'],
+    ],
+    'SUBSCRIPTIONS': [
+        ['SUB_STREAMING','Streaming'],['SUB_MUSIC','Music'],
+        ['SUB_GAMING','Gaming'],['SUB_SOFTWARE','Software'],
+        ['SUB_GYM','Gym'],['SUB_OTHER','Other'],
+    ],
+    'UTILITIES': [
+        ['UTIL_GAS','Gas'],['UTIL_ELECTRIC','Electricity'],
+        ['UTIL_WATER','Water'],['UTIL_COUNCIL','Council Tax'],
+        ['UTIL_BROADBAND','Broadband'],['UTIL_OTHER','Other'],
+    ],
+};
+
+function updateSubType(cat) {
+    const row = document.getElementById('sub-type-row');
+    const select = document.getElementById('id_sub_type');
+
+    if (subTypeMap[cat]) {
+        select.innerHTML = '<option value="">-- Select type --</option>';
+        subTypeMap[cat].forEach(([val,label]) => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = label;
+            select.appendChild(opt);
+        });
+        row.style.display = 'block';
+    } else {
+        select.innerHTML = '';
+        row.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const cat = document.getElementById('id_category');
+    if (cat) {
+        updateSubType(cat.value);
+        cat.addEventListener('change', () => updateSubType(cat.value));
+    }
+});
 </script>
 
 </body>

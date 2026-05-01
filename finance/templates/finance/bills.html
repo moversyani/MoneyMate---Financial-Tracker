@@ -32,6 +32,15 @@
 
             <!-- Category first — sets context before other fields -->
             <p><label for="id_category">Category:</label>{{ form.category }}</p>
+
+            <!-- Sub-type row: hidden by default, shown by JS when category has sub-types -->
+                <div id="sub-type-row" style="display:none; margin-bottom:12px;">
+                    <p style="margin:0;">
+                        <label for="id_sub_type">Type:</label>
+                        {{ form.sub_type }}
+                    </p>
+                </div>      
+            
             <p><label for="id_name">Name:</label>{{ form.name }}</p>
             <p><label for="id_company">Company:</label>{{ form.company }}</p>
 
@@ -144,4 +153,63 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SUB-TYPE DROPDOWN SCRIPT -->
+<script>
+const subTypeMap = {
+    'INSURANCE': [
+        ['INS_CAR','Car Insurance'],['INS_HOME','Home Insurance'],['INS_LIFE','Life Insurance'],
+        ['INS_HEALTH','Health Insurance'],['INS_TRAVEL','Travel Insurance'],
+        ['INS_PET','Pet Insurance'],['INS_OTHER','Other Insurance'],
+    ],
+    'LOANS': [
+        ['LOAN_PERSONAL','Personal Loan'],['LOAN_CAR','Car Finance'],
+        ['LOAN_STUDENT','Student Loan'],['LOAN_PAYDAY','Payday Loan'],
+        ['LOAN_OTHER','Other Loan'],
+    ],
+    'DEBTS': [
+        ['DEBT_CREDIT','Credit Card'],['DEBT_OVERDRAFT','Overdraft'],
+        ['DEBT_BNPL','Buy Now Pay Later'],['DEBT_OTHER','Other Debt'],
+    ],
+    'SUBSCRIPTIONS': [
+        ['SUB_STREAMING','Streaming'],['SUB_MUSIC','Music'],
+        ['SUB_GAMING','Gaming'],['SUB_SOFTWARE','Software'],
+        ['SUB_GYM','Gym'],['SUB_OTHER','Other'],
+    ],
+    'UTILITIES': [
+        ['UTIL_GAS','Gas'],['UTIL_ELECTRIC','Electricity'],
+        ['UTIL_WATER','Water'],['UTIL_COUNCIL','Council Tax'],
+        ['UTIL_BROADBAND','Broadband'],['UTIL_OTHER','Other'],
+    ],
+};
+
+function updateSubType(cat) {
+    const row = document.getElementById('sub-type-row');
+    const select = document.getElementById('id_sub_type');
+
+    if (subTypeMap[cat]) {
+        select.innerHTML = '<option value="">-- Select type --</option>';
+        subTypeMap[cat].forEach(([val,label]) => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = label;
+            select.appendChild(opt);
+        });
+        row.style.display = 'block';
+    } else {
+        select.innerHTML = '';
+        row.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const cat = document.getElementById('id_category');
+    if (cat) {
+        updateSubType(cat.value);
+        cat.addEventListener('change', () => updateSubType(cat.value));
+    }
+});
+</script>
 {% endblock %}

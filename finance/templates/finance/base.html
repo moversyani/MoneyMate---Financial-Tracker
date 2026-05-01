@@ -209,7 +209,13 @@
         </svg>
     </a>
     <div class="topbar-right">
-        <span class="topbar-month">April 2026</span>
+        <!-- DYNAMIC TOPBAR MONTH NAVIGATION -->
+        <div class="topbar-month" style="display: flex; align-items: center; gap: 12px; padding: 4px 12px;">
+            <a href="?month={{ prev_month }}&year={{ prev_year }}" style="color: var(--text-3); text-decoration: none; font-size: 10px;">◀</a>
+            <span style="color: var(--text-1); font-weight: 500; min-width: 80px; text-align: center;">{{ month_name }} {{ year }}</span>
+            <a href="?month={{ next_month }}&year={{ next_year }}" style="color: var(--text-3); text-decoration: none; font-size: 10px;">▶</a>
+        </div>
+
         <div class="topbar-user">
             <!-- slice:":1"|upper takes the first letter of username and uppercases it -->
             <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
@@ -291,6 +297,8 @@
         if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); }
     };
 </script>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

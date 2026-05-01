@@ -4,34 +4,102 @@ from django import forms
 from .models import Expense, Income, SavingsGoal
 
 
+# Maps each category to its relevant sub-type choices
+# Used by JS in the template to show/hide the sub_type dropdown dynamically
+CATEGORY_SUB_TYPES = {
+    'INSURANCE':     [
+        ('', '-- Select type --'),
+        ('INS_CAR',    'Car Insurance'),
+        ('INS_HOME',   'Home Insurance'),
+        ('INS_LIFE',   'Life Insurance'),
+        ('INS_HEALTH', 'Health Insurance'),
+        ('INS_TRAVEL', 'Travel Insurance'),
+        ('INS_PET',    'Pet Insurance'),
+        ('INS_OTHER',  'Other Insurance'),
+    ],
+    'LOANS':         [
+        ('', '-- Select type --'),
+        ('LOAN_PERSONAL', 'Personal Loan'),
+        ('LOAN_CAR',      'Car Finance'),
+        ('LOAN_STUDENT',  'Student Loan'),
+        ('LOAN_PAYDAY',   'Payday Loan'),
+        ('LOAN_OTHER',    'Other Loan'),
+    ],
+    'DEBTS':         [
+        ('', '-- Select type --'),
+        ('DEBT_CREDIT',    'Credit Card'),
+        ('DEBT_OVERDRAFT', 'Overdraft'),
+        ('DEBT_BNPL',      'Buy Now Pay Later'),
+        ('DEBT_OTHER',     'Other Debt'),
+    ],
+    'SUBSCRIPTIONS': [
+        ('', '-- Select type --'),
+        ('SUB_STREAMING', 'Streaming (Netflix/Disney)'),
+        ('SUB_MUSIC',     'Music (Spotify/Apple)'),
+        ('SUB_GAMING',    'Gaming'),
+        ('SUB_SOFTWARE',  'Software/Apps'),
+        ('SUB_GYM',       'Gym / Fitness'),
+        ('SUB_OTHER',     'Other Subscription'),
+    ],
+    'UTILITIES':     [
+        ('', '-- Select type --'),
+        ('UTIL_GAS',       'Gas'),
+        ('UTIL_ELECTRIC',  'Electricity'),
+        ('UTIL_WATER',     'Water'),
+        ('UTIL_COUNCIL',   'Council Tax'),
+        ('UTIL_BROADBAND', 'Broadband'),
+        ('UTIL_OTHER',     'Other Utility'),
+    ],
+}
+
+
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model  = Expense
+        # Category and sub_type first — sets context before other fields
         fields = [
-            'category', 'name', 'company', 'amount', 'frequency', 'bill_type',
-            'customer_number', 'tariff_details', 'start_date', 'end_date',
+            'category', 'sub_type', 'name', 'company', 'amount', 'frequency',
+            'bill_type', 'customer_number', 'tariff_details', 'start_date', 'end_date',
         ]
         widgets = {
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Car Insurance'}),
-            'company': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Admiral, Vodafone'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
-            'frequency': forms.Select(attrs={'class': 'form-control'}),
-            'bill_type': forms.Select(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={
+                'class': 'form-control',
+                # onchange triggers JS to show/hide the sub_type row
+                'onchange': 'updateSubType(this.value)',
+            }),
+            # sub_type is hidden by default — JS shows it for relevant categories
+            'sub_type':        forms.Select(attrs={'class': 'form-control'}),
+            'name':            forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Car Insurance'}),
+            'company':         forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Admiral, Vodafone'}),
+            'amount':          forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
+            'frequency':       forms.Select(attrs={'class': 'form-control'}),
+            'bill_type':       forms.Select(attrs={'class': 'form-control'}),
             'customer_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 123456789'}),
-            'tariff_details': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Standard Variable'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'tariff_details':  forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Standard Variable'}),
+            'start_date':      forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'end_date':        forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
 
 class IncomeForm(forms.ModelForm):
     class Meta:
         model  = Income
-        fields = ['source', 'amount']
+        fields = ['source', 'amount', 'is_recurring']
         widgets = {
-            'source': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Monthly Salary'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
+            'source': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. Monthly Salary',
+            }),
+            'amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'step': '0.01',
+            }),
+            # Checkbox: ticked = rolls over each month, unticked = one-off income
+            'is_recurring': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'is_recurring': 'Recurring income (rolls over each month)',
         }
 
 
