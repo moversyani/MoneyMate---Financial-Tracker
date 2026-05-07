@@ -1,6 +1,8 @@
 # forms.py — MoneyMate form definitions
 
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from .models import Expense, Income, SavingsGoal
 
 
@@ -51,6 +53,48 @@ CATEGORY_SUB_TYPES = {
         ('UTIL_OTHER',     'Other Utility'),
     ],
 }
+
+
+# Extends Django's built-in UserCreationForm to add a required email field
+class RegisterForm(UserCreationForm):
+    # Email is required — used for verification
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'your@email.com',
+        }),
+        help_text='A verification link will be sent to this address.',
+    )
+
+    class Meta:
+        model  = User
+        fields = ['username', 'email', 'password1', 'password2']
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Choose a username',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Style the password fields to match the rest of the app
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Create a password',
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Confirm your password',
+        })
+
+    def clean_email(self):
+        # Prevent duplicate email registrations
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('An account with this email already exists.')
+        return email
 
 
 class ExpenseForm(forms.ModelForm):

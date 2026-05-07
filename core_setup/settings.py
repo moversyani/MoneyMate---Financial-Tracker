@@ -72,4 +72,17 @@ STATIC_URL = 'static/'
 
 # --- Auth settings ---
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'  # where to go after login
+LOGIN_REDIRECT_URL = '/dashboard/'
+
+# --- Email: Gmail SMTP ---
+# To set this up:
+# 1. Go to your Google account → Security → 2-Step Verification (enable it)
+# 2. Go to Security → App passwords → generate one for "Mail"
+# 3. Replace the values below with your Gmail address and the generated app password
+EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST      = 'smtp.gmail.com'
+EMAIL_PORT      = 587
+EMAIL_USE_TLS   = True
+EMAIL_HOST_USER     = 'muhammedversyani@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-app-password-here'   # generate from Google → Security → App passwords
+DEFAULT_FROM_EMAIL  = 'MoneyMate <muhammedversyani@gmail.com>'

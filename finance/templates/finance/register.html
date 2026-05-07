@@ -256,6 +256,16 @@
                 {{ form.username.errors }}
             </div>
 
+            <!-- Email field — styled to match the rest of the form -->
+            <div class="field">
+                <label for="id_email">Email</label>
+                <input type="email"
+                    name="email"
+                    id="id_email"
+                    placeholder="your@email.com" />
+                {{ form.email.errors }}
+            </div>
+
             <!-- Password 1 -->
             <div class="field">
                 <label for="id_password1">Password</label>

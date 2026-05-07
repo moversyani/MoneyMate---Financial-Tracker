@@ -1,0 +1,51 @@
+<!-- verify_pending.html — shown after registration while user checks their email -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>MoneyMate — Verify Your Email</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        /* --- Reuse the same dark theme tokens as the rest of the app --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #10b981; --green-dim: rgba(16,185,129,0.12);
+            --bg-page: #0f1117; --bg-card: #1a1d27; --bg-input: #21253a;
+            --text-1: #e8eaf0; --text-2: #8b92a8; --text-3: #555c72;
+            --border: rgba(255,255,255,0.07); --blue: #60a5fa;
+            --r: 12px; --pill: 100px;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-page); color: var(--text-1); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 48px 40px; max-width: 460px; width: 100%; text-align: center; }
+        .icon { font-size: 48px; margin-bottom: 20px; }
+        .title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+        .body { font-size: 14px; color: var(--text-2); line-height: 1.7; margin-bottom: 24px; }
+        .body strong { color: var(--text-1); }
+        .hint { font-size: 12px; color: var(--text-3); margin-top: 20px; }
+        /* Back to login link */
+        .link { color: var(--green); text-decoration: none; font-size: 13px; font-weight: 500; }
+        .link:hover { text-decoration: underline; }
+        /* Green glow ring around icon */
+        .icon-wrap { width: 80px; height: 80px; border-radius: 50%; background: var(--green-dim); border: 1px solid rgba(16,185,129,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 36px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <!-- Envelope icon -->
+        <div class="icon-wrap">📧</div>
+        <div class="title">Check your inbox</div>
+        <div class="body">
+            We've sent a verification link to your email address.<br /><br />
+            <strong>Click the link in the email</strong> to activate your MoneyMate account.
+            The link expires in <strong>24 hours</strong>.
+        </div>
+        <a href="{% url 'login' %}" class="link">← Back to login</a>
+        <div class="hint">
+            Can't find it? Check your spam folder. If you still can't find it,
+            <a href="{% url 'register' %}" style="color:var(--blue);text-decoration:none;">register again</a>.
+        </div>
+    </div>
+</body>
+</html>

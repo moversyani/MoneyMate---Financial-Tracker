@@ -2,14 +2,17 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings as django_settings
 from decimal import Decimal
 from datetime import date
 import calendar
-from .models import Income, Expense, SavingsGoal
-from .forms import ExpenseForm, IncomeForm, SavingsGoalForm
+from .models import Income, Expense, SavingsGoal, EmailVerificationToken
+from .forms import ExpenseForm, IncomeForm, SavingsGoalForm, RegisterForm
 
 
 # --- Helper: get the month/year being viewed from the request ---
@@ -248,7 +251,6 @@ def bills_page(request):
 
 
 # --- Compare & Save: Car Insurance ---
-# Filters INSURANCE bills with sub_type INS_CAR specifically
 @login_required
 def compare_insurance(request):
     bills       = Expense.objects.filter(user=request.user, category='INSURANCE', sub_type='INS_CAR')
@@ -256,13 +258,12 @@ def compare_insurance(request):
     context = {
         'bills':       bills,
         'total_spent': round(total_spent, 2),
-        'benchmark':   Decimal('80.00'),  # ~£960/yr UK avg / 12
+        'benchmark':   Decimal('80.00'),
     }
     return render(request, 'finance/compare_insurance.html', context)
 
 
 # --- Compare & Save: Energy ---
-# Filters UTILITIES bills with electric/gas sub-types
 @login_required
 def compare_energy(request):
     bills       = Expense.objects.filter(
@@ -278,7 +279,6 @@ def compare_energy(request):
 
 
 # --- Compare & Save: Broadband ---
-# Filters UTILITIES bills with broadband sub-type
 @login_required
 def compare_broadband(request):
     bills       = Expense.objects.filter(
@@ -294,7 +294,6 @@ def compare_broadband(request):
 
 
 # --- Compare & Save: Home Insurance ---
-# Filters INSURANCE bills with sub_type INS_HOME specifically
 @login_required
 def compare_home(request):
     bills       = Expense.objects.filter(user=request.user, category='INSURANCE', sub_type='INS_HOME')
@@ -302,7 +301,7 @@ def compare_home(request):
     context = {
         'bills':       bills,
         'total_spent': round(total_spent, 2),
-        'benchmark':   Decimal('40.00'),  # ~£480/yr UK avg / 12
+        'benchmark':   Decimal('40.00'),
     }
     return render(request, 'finance/compare_home.html', context)
 
@@ -319,7 +318,6 @@ def savings_goals(request):
     total_expenses = sum(e.monthly_amount() for e in expenses)
     leftover       = total_income - total_expenses
 
-    # Suggest 20% of disposable income as the monthly contribution
     suggested_contribution = round(leftover * Decimal('0.20'), 2) if leftover > 0 else Decimal('0.00')
 
     if request.method == 'POST':
@@ -381,21 +379,79 @@ def delete_income(request, pk):
 
 
 # --- Register ---
+# Creates user with is_active=False, sends verification email, redirects to pending page
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
+
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, f'Welcome to MoneyMate, {user.username}!')
-            return redirect('dashboard')
-        else:
-            messages.error(request, 'Please fix the errors below.')
+            user          = form.save(commit=False)
+            user.email    = form.cleaned_data['email']
+            # Deactivate until email is confirmed
+            user.is_active = False
+            user.save()
+
+            # Create a unique verification token for this user
+            token_obj = EmailVerificationToken.objects.create(user=user)
+
+            # Build the verification link using the request host
+            verify_url = request.build_absolute_uri(f'/verify-email/{token_obj.token}/')
+
+            # Send the verification email
+            send_mail(
+                subject='Verify your MoneyMate account',
+                message=(
+                    f'Hi {user.username},\n\n'
+                    f'Thanks for signing up to MoneyMate!\n\n'
+                    f'Please verify your email address by clicking the link below:\n\n'
+                    f'{verify_url}\n\n'
+                    f'This link expires in 24 hours.\n\n'
+                    f'If you did not sign up, you can safely ignore this email.\n\n'
+                    f'— The MoneyMate Team'
+                ),
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            return redirect('verify_pending')
+        # If form is invalid, re-render with errors
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
+
     return render(request, 'finance/register.html', {'form': form})
+
+
+# --- Verify pending ---
+# Shown after registration — tells the user to check their inbox
+def verify_pending(request):
+    return render(request, 'finance/verify_pending.html')
+
+
+# --- Verify email ---
+# Called when user clicks the link in their email
+def verify_email(request, token):
+    try:
+        token_obj = EmailVerificationToken.objects.get(token=token)
+    except EmailVerificationToken.DoesNotExist:
+        # Token not found — could be already used or invalid
+        return render(request, 'finance/verify_invalid.html', {'reason': 'invalid'})
+
+    if token_obj.is_expired():
+        # Token is older than 24 hours — delete it and ask them to re-register
+        token_obj.user.delete()
+        return render(request, 'finance/verify_invalid.html', {'reason': 'expired'})
+
+    # Activate the account and delete the used token
+    user            = token_obj.user
+    user.is_active  = True
+    user.save()
+    token_obj.delete()
+
+    messages.success(request, f'Email verified! Welcome to MoneyMate, {user.username}. Please log in.')
+    return redirect('login')
 
 
 # --- Login ---
