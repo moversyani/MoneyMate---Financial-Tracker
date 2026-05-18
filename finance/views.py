@@ -376,6 +376,7 @@ def delete_income(request, pk):
     income = get_object_or_404(Income, pk=pk, user=request.user)
     income.delete()
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+    
 
 
 # --- Register ---
