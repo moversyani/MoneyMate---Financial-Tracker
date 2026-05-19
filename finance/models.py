@@ -147,6 +147,18 @@ class SavingsGoal(models.Model):
         return f"{self.name} — £{self.current_amount}/£{self.target_amount}"
 
 
+# Stores extra profile info — one row per user, created on first profile save
+class UserProfile(models.Model):
+    user       = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    occupation = models.CharField(max_length=100, blank=True, default='')
+    location   = models.CharField(max_length=100, blank=True, default='')
+    bio        = models.TextField(max_length=300, blank=True, default='')
+    phone      = models.CharField(max_length=30, blank=True, default='')
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+
 # Stores email verification tokens — one per user, deleted once verified
 class EmailVerificationToken(models.Model):
     user       = models.OneToOneField(User, on_delete=models.CASCADE)

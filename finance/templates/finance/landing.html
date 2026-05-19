@@ -56,7 +56,7 @@
         /* ── NAV ── */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-            height: 60px;
+            height: 70px;
             background: rgba(15,17,23,0.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
@@ -104,7 +104,7 @@
         /* ── HERO ── */
         .hero {
             position: relative; z-index: 1;
-            padding: 140px 40px 80px;
+            padding: 150px 40px 80px;
             text-align: center;
             max-width: 900px;
             margin: 0 auto;
@@ -119,6 +119,8 @@
             border-radius: var(--pill); border: 1px solid rgba(16,185,129,0.2);
             margin-bottom: 28px;
         }
+
+        .hero-logo { display: flex; justify-content: center; margin-bottom: 32px; animation: fadeUp 0.5s ease both; filter: drop-shadow(0 0 32px rgba(16,185,129,0.18)); }
 
         .hero h1 {
             font-family: 'Syne', sans-serif;
@@ -397,7 +399,7 @@
 <nav>
     <!-- Brand logo -->
     <a href="/" class="nav-brand">
-        <svg height="36" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+        <svg height="54" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <linearGradient id="nb" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
                 <linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
@@ -431,7 +433,26 @@
 
 <!-- HERO -->
 <section class="hero">
-    <div class="eyebrow">💸 Smart budgeting for real life</div>
+    <div class="hero-logo">
+        <svg height="120" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="hlb" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#2d5fa8"/></linearGradient>
+                <linearGradient id="hlg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5dbf6e"/><stop offset="100%" stop-color="#2a9a4a"/></linearGradient>
+                <linearGradient id="hla" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#4ab870"/><stop offset="100%" stop-color="#7edc5a"/></linearGradient>
+            </defs>
+            <ellipse cx="18" cy="9" rx="5" ry="5" fill="url(#hlb)"/>
+            <path d="M 8 46 Q 10 30 17 24 Q 21 21 25 24 Q 29 28 28 36 L 31 46" fill="url(#hlb)"/>
+            <ellipse cx="38" cy="7" rx="4.5" ry="4.5" fill="url(#hlg)"/>
+            <path d="M 28 44 Q 31 28 37 22 Q 41 19 45 22 Q 49 26 48 34 L 51 44" fill="url(#hlg)"/>
+            <path d="M 26 35 Q 32 38 38 35" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="33" y="22" font-family="Georgia,serif" font-weight="700" font-size="9" fill="#c8a84b" text-anchor="middle">$</text>
+            <path d="M 10 46 L 19 24 L 29 34 L 39 20 L 50 44" fill="none" stroke="url(#hla)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <polygon points="44,13 54,17 47,24" fill="url(#hla)"/>
+            <text x="64" y="36" font-family="Arial Black,sans-serif" font-weight="900" font-size="20" fill="#e8eaf0" letter-spacing="-0.3">MONEY<tspan fill="#10b981">MATE</tspan></text>
+            <text x="65" y="47" font-family="Arial,sans-serif" font-size="5.5" fill="#555c72" letter-spacing="1">YOUR TRUSTED FINANCIAL GUIDE</text>
+        </svg>
+    </div>
+    <div class="eyebrow">&#128184; Smart budgeting for real life</div>
     <h1>Know exactly where<br />your <em>money goes</em></h1>
     <p class="hero-sub">
         MoneyMate turns your income and bills into a clear picture of your finances

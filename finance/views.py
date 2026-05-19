@@ -1,8 +1,8 @@
 # views.py — MoneyMate views
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,8 +11,8 @@ from django.conf import settings as django_settings
 from decimal import Decimal
 from datetime import date
 import calendar
-from .models import Income, Expense, SavingsGoal, EmailVerificationToken
-from .forms import ExpenseForm, IncomeForm, SavingsGoalForm, RegisterForm
+from .models import Income, Expense, SavingsGoal, EmailVerificationToken, UserProfile
+from .forms import ExpenseForm, IncomeForm, SavingsGoalForm, RegisterForm, ProfileForm, EmailChangeForm, SupportContactForm
 
 
 # --- Helper: get the month/year being viewed from the request ---
@@ -478,3 +478,117 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('landing')
+
+
+# --- Profile ---
+@login_required
+def profile_view(request):
+    user    = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=user, initial={
+            'occupation': profile.occupation,
+            'location':   profile.location,
+            'phone':      profile.phone,
+            'bio':        profile.bio,
+        })
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated.')
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=user, initial={
+            'occupation': profile.occupation,
+            'location':   profile.location,
+            'phone':      profile.phone,
+            'bio':        profile.bio,
+        })
+
+    income_count = Income.objects.filter(user=user).values('source').distinct().count()
+    bills_count  = Expense.objects.filter(user=user).values('name').distinct().count()
+    goals        = SavingsGoal.objects.filter(user=user)
+    total_saved  = sum(g.current_amount for g in goals)
+
+    return render(request, 'finance/profile.html', {
+        'form':         form,
+        'profile':      profile,
+        'income_count': income_count,
+        'bills_count':  bills_count,
+        'goals_count':  goals.count(),
+        'total_saved':  total_saved,
+        **month_nav(*get_active_month(request)),
+    })
+
+
+# --- Settings ---
+@login_required
+def settings_view(request):
+    user          = request.user
+    pw_form       = PasswordChangeForm(user)
+    email_form    = EmailChangeForm(user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'change_password':
+            pw_form = PasswordChangeForm(user, request.POST)
+            if pw_form.is_valid():
+                pw_form.save()
+                update_session_auth_hash(request, pw_form.user)
+                messages.success(request, 'Password changed successfully.')
+                return redirect('settings')
+            else:
+                messages.error(request, 'Please fix the errors below.')
+
+        elif action == 'change_email':
+            email_form = EmailChangeForm(user, request.POST)
+            if email_form.is_valid():
+                user.email = email_form.cleaned_data['email']
+                user.save()
+                messages.success(request, 'Email address updated.')
+                return redirect('settings')
+            else:
+                messages.error(request, 'Please fix the errors below.')
+
+        elif action == 'delete_account':
+            confirm = request.POST.get('confirm_username', '').strip()
+            if confirm == user.username:
+                user.delete()
+                messages.success(request, 'Your account has been deleted.')
+                return redirect('landing')
+            else:
+                messages.error(request, 'Username did not match — account not deleted.')
+
+    return render(request, 'finance/settings.html', {
+        'pw_form':    pw_form,
+        'email_form': email_form,
+        **month_nav(*get_active_month(request)),
+    })
+
+
+# --- Support ---
+@login_required
+def support_view(request):
+    contact_form = SupportContactForm()
+
+    if request.method == 'POST':
+        contact_form = SupportContactForm(request.POST)
+        if contact_form.is_valid():
+            send_mail(
+                subject=f"[MoneyMate Support] {contact_form.cleaned_data['subject']}",
+                message=(
+                    f"From: {request.user.username} ({request.user.email})\n\n"
+                    f"{contact_form.cleaned_data['message']}"
+                ),
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[django_settings.EMAIL_HOST_USER],
+                fail_silently=True,
+            )
+            messages.success(request, 'Message sent — we\'ll get back to you soon.')
+            return redirect('support')
+
+    return render(request, 'finance/support.html', {
+        'contact_form': contact_form,
+        **month_nav(*get_active_month(request)),
+    })
