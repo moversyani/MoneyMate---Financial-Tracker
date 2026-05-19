@@ -3,7 +3,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Expense, Income, SavingsGoal
+from .models import Expense, Income, SavingsGoal, UserProfile
 
 
 # Maps each category to its relevant sub-type choices
@@ -173,3 +173,46 @@ class SavingsGoalForm(forms.ModelForm):
                 'step': '0.01',
             }),
         }
+
+
+class ProfileForm(forms.ModelForm):
+    first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'First name'}))
+    last_name  = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Last name'}))
+    occupation = forms.CharField(required=False, max_length=100, widget=forms.TextInput(attrs={'placeholder': 'e.g. Software Engineer, Student, Nurse'}))
+    location   = forms.CharField(required=False, max_length=100, widget=forms.TextInput(attrs={'placeholder': 'e.g. Manchester, UK'}))
+    phone      = forms.CharField(required=False, max_length=30, widget=forms.TextInput(attrs={'placeholder': 'e.g. 07700 900000'}))
+    bio        = forms.CharField(required=False, max_length=300, widget=forms.Textarea(attrs={'placeholder': 'A short bio about yourself…', 'rows': 3}))
+
+    class Meta:
+        model  = User
+        fields = ['first_name', 'last_name']
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.occupation = self.cleaned_data.get('occupation', '')
+        profile.location   = self.cleaned_data.get('location', '')
+        profile.phone      = self.cleaned_data.get('phone', '')
+        profile.bio        = self.cleaned_data.get('bio', '')
+        if commit:
+            profile.save()
+        return user
+
+
+class EmailChangeForm(forms.Form):
+    email = forms.EmailField(label='New email address', widget=forms.EmailInput(attrs={'placeholder': 'your@email.com'}))
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError('That email is already in use by another account.')
+        return email
+
+
+class SupportContactForm(forms.Form):
+    subject = forms.CharField(max_length=120, widget=forms.TextInput(attrs={'placeholder': 'What do you need help with?'}))
+    message = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Describe your issue or question…', 'rows': 5}))

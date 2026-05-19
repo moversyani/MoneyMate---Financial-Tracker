@@ -8,7 +8,17 @@ SECRET_KEY = 'django-insecure-@wejvnmrz#z8#tl&8r(r!kqhd-1lt7uj^bj#+t@in8*&lj#9@i
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "superglue-daredevil-perch.ngrok-free.dev",
+    ".ngrok-free.dev",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://superglue-daredevil-perch.ngrok-free.dev",
+    "https://*.ngrok-free.dev",
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',

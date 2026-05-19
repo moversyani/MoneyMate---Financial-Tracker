@@ -1,0 +1,147 @@
+{% extends 'finance/base.html' %}
+{% block title %}Support — MoneyMate{% endblock %}
+
+{% block content %}
+<div class="page-title">Support</div>
+<div class="page-sub">Got a question? We've got answers.</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="toast toast-{{ message.tags }}" id="toast">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+
+    <!-- Left: FAQ -->
+    <div>
+        <div class="card">
+            <div class="card-title">Frequently Asked Questions</div>
+
+            {% for faq in faqs %}
+            <div class="faq-item" onclick="toggleFaq({{ forloop.counter0 }})">
+                <div class="faq-q">
+                    <span>{{ faq.q }}</span>
+                    <span class="faq-caret" id="caret-{{ forloop.counter0 }}">▼</span>
+                </div>
+                <div class="faq-a" id="faq-{{ forloop.counter0 }}">{{ faq.a }}</div>
+            </div>
+            {% empty %}
+            <div class="faq-item" onclick="toggleFaq(0)">
+                <div class="faq-q"><span>How does the month rollover work?</span><span class="faq-caret" id="caret-0">▼</span></div>
+                <div class="faq-a" id="faq-0">When you view a new month for the first time, MoneyMate automatically copies your recurring income sources and fixed bills from the previous month. One-off and variable bills stay behind.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(1)">
+                <div class="faq-q"><span>How do I track a one-off expense?</span><span class="faq-caret" id="caret-1">▼</span></div>
+                <div class="faq-a" id="faq-1">Go to Bills, add a new bill and set the Frequency to "One-off". It'll count for that month only and won't roll over.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(2)">
+                <div class="faq-q"><span>What's the difference between Fixed and Variable bills?</span><span class="faq-caret" id="caret-2">▼</span></div>
+                <div class="faq-a" id="faq-2">Fixed bills have the same amount every month (like rent or a subscription). Variable bills change month to month (like a utility bill based on usage). Only fixed bills roll over automatically.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(3)">
+                <div class="faq-q"><span>How are savings goal timelines calculated?</span><span class="faq-caret" id="caret-3">▼</span></div>
+                <div class="faq-a" id="faq-3">MoneyMate divides your remaining amount (target minus current) by your monthly contribution to estimate how many months until you hit your goal. Update your contribution any time to recalculate.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(4)">
+                <div class="faq-q"><span>How do I change my password or email?</span><span class="faq-caret" id="caret-4">▼</span></div>
+                <div class="faq-a" id="faq-4">Click your username in the top-right corner and go to Settings. You'll find tabs for updating your password and email address.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(5)" style="border-bottom:none;">
+                <div class="faq-q"><span>Can I delete my account?</span><span class="faq-caret" id="caret-5">▼</span></div>
+                <div class="faq-a" id="faq-5">Yes — go to Settings → Danger Zone. You'll be asked to type your username to confirm. This permanently deletes all your data and cannot be undone.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right: Contact form -->
+    <div>
+        <div class="card" style="margin-bottom:16px;">
+            <div class="card-title">Contact Us</div>
+            <p style="font-size:13px; color:var(--text-2); margin-bottom:20px; line-height:1.6;">
+                Can't find what you're looking for? Send us a message and we'll get back to you.
+            </p>
+            <form method="POST" id="contactForm">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Subject</label>
+                    <input type="text" name="subject" placeholder="What do you need help with?" required maxlength="120"
+                           value="{{ contact_form.subject.value|default:'' }}" />
+                    {% for e in contact_form.subject.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="field">
+                    <label>Message</label>
+                    <textarea name="message" placeholder="Describe your issue or question…" rows="5" required
+                              style="width:100%; padding:9px 12px; font-family:'DM Sans',sans-serif; font-size:13px; background:var(--bg-input); border:1px solid rgba(255,255,255,0.10); border-radius:var(--r-sm); color:var(--text-1); outline:none; resize:vertical; transition:border-color 0.2s;">{{ contact_form.message.value|default:'' }}</textarea>
+                    {% for e in contact_form.message.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button type="submit" class="btn btn-green btn-sm" id="sendBtn">Send Message</button>
+                    <span id="sendingSpinner" style="display:none; font-size:12px; color:var(--text-3);">Sending…</span>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick links -->
+        <div class="card">
+            <div class="card-title">Quick Links</div>
+            <a href="{% url 'dashboard' %}" class="quick-link">📊 Back to Dashboard</a>
+            <a href="{% url 'savings_goals' %}" class="quick-link">🎯 Savings Goals</a>
+            <a href="{% url 'bills_page' %}" class="quick-link">🧾 Manage Bills</a>
+            <a href="{% url 'income_page' %}" class="quick-link">💷 Manage Income</a>
+            <a href="{% url 'settings' %}" class="quick-link" style="border-bottom:none;">⚙️ Account Settings</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .faq-item { padding:14px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+    .faq-q { display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:500; color:var(--text-1); gap:12px; }
+    .faq-caret { font-size:9px; color:var(--text-3); transition:transform 0.2s; flex-shrink:0; }
+    .faq-caret.open { transform:rotate(180deg); }
+    .faq-a { display:none; font-size:13px; color:var(--text-2); line-height:1.65; margin-top:10px; padding-left:2px; }
+    .faq-a.open { display:block; animation:fadeIn 0.2s ease; }
+    .faq-item:hover .faq-q { color:var(--green); }
+
+    .quick-link { display:flex; align-items:center; gap:10px; padding:10px 0; font-size:13px; color:var(--text-2); text-decoration:none; border-bottom:1px solid var(--border); transition:color 0.15s; }
+    .quick-link:hover { color:var(--green); }
+
+    .field-error { font-size:12px; color:var(--red); margin-top:4px; }
+    textarea:focus { border-color:var(--green) !important; }
+
+    .toast { padding:12px 18px; border-radius:var(--r-sm); font-size:13px; margin-bottom:16px; animation:slideIn 0.3s ease; }
+    .toast-success { background:var(--green-dim); color:var(--green); border:1px solid rgba(16,185,129,0.3); }
+    .toast-error   { background:var(--red-dim);   color:var(--red);   border:1px solid rgba(248,113,113,0.3); }
+    @keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleFaq(i) {
+        const body  = document.getElementById('faq-' + i);
+        const caret = document.getElementById('caret-' + i);
+        const isOpen = body.classList.contains('open');
+        // Close all
+        document.querySelectorAll('.faq-a').forEach(el => el.classList.remove('open'));
+        document.querySelectorAll('.faq-caret').forEach(el => el.classList.remove('open'));
+        // Open clicked one unless it was already open
+        if (!isOpen) {
+            body.classList.add('open');
+            caret.classList.add('open');
+        }
+    }
+
+    // Show spinner on form submit
+    document.getElementById('contactForm').addEventListener('submit', function () {
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('sendBtn').textContent = 'Sending…';
+    });
+
+    // Auto-dismiss toast
+    const toast = document.getElementById('toast');
+    if (toast) setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 5000);
+</script>
+{% endblock %}

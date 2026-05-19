@@ -32,6 +32,11 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_view, name='register'),
+
+    # User pages
+    path('profile/', views.profile_view, name='profile'),
+    path('settings/', views.settings_view, name='settings'),
+    path('support/', views.support_view, name='support'),
     # Email verification — token is a UUID passed in the URL
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
 

@@ -49,11 +49,23 @@
         .topbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: var(--text-1); text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .topbar-right { display: flex; align-items: center; gap: 14px; }
         .topbar-month { font-size: 12px; color: var(--text-3); background: var(--bg-input); padding: 4px 12px; border-radius: var(--pill); border: 1px solid var(--border); }
-        .topbar-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
         /* Avatar circle shows first letter of the username */
-        .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green); }
-        .topbar-logout { font-size: 12px; color: var(--text-3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-sm); border: 1px solid var(--border); transition: color 0.2s, border-color 0.2s; }
-        .topbar-logout:hover { color: var(--text-1); border-color: rgba(255,255,255,0.25); }
+        .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dim); border: 1px solid var(--green); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+        .topbar-caret { font-size: 9px; color: var(--text-3); transition: transform 0.2s; }
+
+        /* User menu — native <details> dropdown, no JS needed */
+        .user-menu { position: relative; }
+        .user-menu summary { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm); transition: background 0.15s; user-select: none; list-style: none; }
+        .user-menu summary::-webkit-details-marker { display: none; }
+        .user-menu summary:hover { background: var(--bg-input); }
+        .user-menu[open] .topbar-caret { transform: rotate(180deg); }
+        .user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 190px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 400; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: 13px; color: var(--text-2); text-decoration: none; border-radius: var(--r-sm); transition: background 0.12s, color 0.12s; }
+        .dropdown-item:hover { background: var(--bg-input); color: var(--text-1); }
+        .dropdown-item .di-icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+        .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+        .dropdown-item.danger { color: var(--red); }
+        .dropdown-item.danger:hover { background: var(--red-dim); color: var(--red); }
 
         /* --- Layout: flex row so sidebar and main sit side by side --- */
         .app-body { display: flex; padding-top: var(--topbar-h); min-height: 100vh; }
@@ -216,12 +228,28 @@
             <a href="?month={{ next_month }}&year={{ next_year }}" style="color: var(--text-3); text-decoration: none; font-size: 10px;">▶</a>
         </div>
 
-        <div class="topbar-user">
-            <!-- slice:":1"|upper takes the first letter of username and uppercases it -->
-            <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
-            {{ user.username }}
-        </div>
-        <a href="{% url 'logout' %}" class="topbar-logout">Log out</a>
+        <details class="user-menu">
+            <summary>
+                <div class="topbar-avatar">{{ user.username|slice:":1"|upper }}</div>
+                {{ user.username }}
+                <span class="topbar-caret">&#9660;</span>
+            </summary>
+            <div class="user-dropdown">
+                <a href="{% url 'profile' %}" class="dropdown-item">
+                    <span class="di-icon">&#128100;</span> View Profile
+                </a>
+                <a href="{% url 'settings' %}" class="dropdown-item">
+                    <span class="di-icon">&#9881;</span> Settings
+                </a>
+                <a href="{% url 'support' %}" class="dropdown-item">
+                    <span class="di-icon">&#128172;</span> Support
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'logout' %}" class="dropdown-item danger">
+                    <span class="di-icon">&#128682;</span> Log out
+                </a>
+            </div>
+        </details>
     </div>
 </header>
 
@@ -296,6 +324,7 @@
         const loader = document.getElementById('page-loader');
         if (loader) { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); }
     };
+
 
 </script>
 
