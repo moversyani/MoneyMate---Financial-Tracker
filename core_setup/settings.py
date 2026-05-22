@@ -11,14 +11,9 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "superglue-daredevil-perch.ngrok-free.dev",
-    ".ngrok-free.dev",
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://superglue-daredevil-perch.ngrok-free.dev",
-    "https://*.ngrok-free.dev",
-]
+CSRF_TRUSTED_ORIGINS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
