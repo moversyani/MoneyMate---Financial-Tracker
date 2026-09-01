@@ -57,14 +57,12 @@ CATEGORY_SUB_TYPES = {
 
 # Extends Django's built-in UserCreationForm to add a required email field
 class RegisterForm(UserCreationForm):
-    # Email is required — used for verification
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
             'placeholder': 'your@email.com',
         }),
-        help_text='A verification link will be sent to this address.',
     )
 
     class Meta:

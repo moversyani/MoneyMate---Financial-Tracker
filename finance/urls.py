@@ -37,9 +37,4 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('settings/', views.settings_view, name='settings'),
     path('support/', views.support_view, name='support'),
-    # Email verification — token is a UUID passed in the URL
-    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
-
-    # Shown after registration — tells user to check their inbox
-    path('verify-pending/', views.verify_pending, name='verify_pending'),
 ]

@@ -2,8 +2,6 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
-import uuid
 
 
 # Stores income sources linked to the logged-in user
@@ -157,18 +155,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile of {self.user.username}"
-
-
-# Stores email verification tokens — one per user, deleted once verified
-class EmailVerificationToken(models.Model):
-    user       = models.OneToOneField(User, on_delete=models.CASCADE)
-    # UUID token makes the link unguessable
-    token      = models.UUIDField(default=uuid.uuid4, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def is_expired(self):
-        # Token expires after 24 hours — user must re-register if it lapses
-        return (timezone.now() - self.created_at).total_seconds() > 86400
-
-    def __str__(self):
-        return f"Verification token for {self.user.username}"

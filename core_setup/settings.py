@@ -1,5 +1,6 @@
 # settings.py — MoneyMate Django configuration
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -80,14 +81,18 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 # --- Email: Gmail SMTP ---
+# Used only for the support contact form — signup no longer sends email.
+# Email verification on signup was removed for accessibility (it forced users
+# through an inbox round-trip and blocked account use until they completed it).
 # To set this up:
 # 1. Go to your Google account → Security → 2-Step Verification (enable it)
 # 2. Go to Security → App passwords → generate one for "Mail"
-# 3. Replace the values below with your Gmail address and the generated app password
+# 3. Set EMAIL_HOST_USER and EMAIL_HOST_PASSWORD as environment variables
+#    (never commit real credentials here — recruiters/reviewers can read this file)
 EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST      = 'smtp.gmail.com'
 EMAIL_PORT      = 587
 EMAIL_USE_TLS   = True
-EMAIL_HOST_USER     = 'muhammedversyani@gmail.com'
-EMAIL_HOST_PASSWORD = 'aauyzosxaqefpeju'  
-DEFAULT_FROM_EMAIL  = 'MoneyMate <muhammedversyani@gmail.com>'
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = f'MoneyMate <{EMAIL_HOST_USER}>'

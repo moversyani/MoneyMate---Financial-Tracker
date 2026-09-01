@@ -11,7 +11,7 @@ from django.conf import settings as django_settings
 from decimal import Decimal
 from datetime import date
 import calendar
-from .models import Income, Expense, SavingsGoal, EmailVerificationToken, UserProfile
+from .models import Income, Expense, SavingsGoal, UserProfile
 from .forms import ExpenseForm, IncomeForm, SavingsGoalForm, RegisterForm, ProfileForm, EmailChangeForm, SupportContactForm
 
 
@@ -380,7 +380,6 @@ def delete_income(request, pk):
 
 
 # --- Register ---
-# Creates user with is_active=False, sends verification email, redirects to pending page
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -388,71 +387,16 @@ def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user          = form.save(commit=False)
-            user.email    = form.cleaned_data['email']
-            # Deactivate until email is confirmed
-            user.is_active = False
+            user       = form.save(commit=False)
+            user.email = form.cleaned_data['email']
             user.save()
-
-            # Create a unique verification token for this user
-            token_obj = EmailVerificationToken.objects.create(user=user)
-
-            # Build the verification link using the request host
-            verify_url = request.build_absolute_uri(f'/verify-email/{token_obj.token}/')
-
-            # Send the verification email
-            send_mail(
-                subject='Verify your MoneyMate account',
-                message=(
-                    f'Hi {user.username},\n\n'
-                    f'Thanks for signing up to MoneyMate!\n\n'
-                    f'Please verify your email address by clicking the link below:\n\n'
-                    f'{verify_url}\n\n'
-                    f'This link expires in 24 hours.\n\n'
-                    f'If you did not sign up, you can safely ignore this email.\n\n'
-                    f'— The MoneyMate Team'
-                ),
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-
-            return redirect('verify_pending')
+            login(request, user)
+            return redirect('dashboard')
         # If form is invalid, re-render with errors
     else:
         form = RegisterForm()
 
     return render(request, 'finance/register.html', {'form': form})
-
-
-# --- Verify pending ---
-# Shown after registration — tells the user to check their inbox
-def verify_pending(request):
-    return render(request, 'finance/verify_pending.html')
-
-
-# --- Verify email ---
-# Called when user clicks the link in their email
-def verify_email(request, token):
-    try:
-        token_obj = EmailVerificationToken.objects.get(token=token)
-    except EmailVerificationToken.DoesNotExist:
-        # Token not found — could be already used or invalid
-        return render(request, 'finance/verify_invalid.html', {'reason': 'invalid'})
-
-    if token_obj.is_expired():
-        # Token is older than 24 hours — delete it and ask them to re-register
-        token_obj.user.delete()
-        return render(request, 'finance/verify_invalid.html', {'reason': 'expired'})
-
-    # Activate the account and delete the used token
-    user            = token_obj.user
-    user.is_active  = True
-    user.save()
-    token_obj.delete()
-
-    messages.success(request, f'Email verified! Welcome to MoneyMate, {user.username}. Please log in.')
-    return redirect('login')
 
 
 # --- Login ---
